@@ -1,16 +1,35 @@
 package main
 
+// @title GoHeadless CMS API
+// @version 1.0
+// @description This is a dynamic Headless CMS API built with Go Fiber and MongoDB.
+// @termsOfService http://swagger.io/terms/
+
+// @contact.name API Support
+// @contact.url http://www.swagger.io/support
+// @contact.email support@swagger.io
+
+// @license.name Apache 2.0
+// @license.url http://www.apache.org/licenses/LICENSE-2.0.html
+
+// @host localhost:3000
+// @BasePath /api/v1
+
 import (
 	"log"
 	"os"
 
+		"GoHeadless/docs"
 	"GoHeadless/internal/collection"
 	"GoHeadless/internal/content"
 	"GoHeadless/internal/platform"
+
 	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v3/middleware/cors"
 	"github.com/gofiber/fiber/v3/middleware/logger"
 	"github.com/gofiber/fiber/v3/middleware/recover"
 	"github.com/joho/godotenv"
+	"github.com/yokeTH/gofiber-scalar/scalar/v3"
 )
 
 func main() {
@@ -20,6 +39,11 @@ func main() {
 	}
 
 	// 1. Initial configuration
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "3000"
+	}
+	docs.SwaggerInfo.Host = "localhost:" + port
 	mongoURI := os.Getenv("MONGO_URI")
 	if mongoURI == "" {
 		mongoURI = "mongodb://localhost:27017"
@@ -51,20 +75,18 @@ func main() {
 	})
 
 	// Middleware
+	app.Use(cors.New())
 	app.Use(logger.New())
 	app.Use(recover.New())
 
 	// 7. Define Routes
+	app.Get("/docs/*", scalar.New())
+
 	api := app.Group("/api/v1")
 	collHandler.Routes(api)
 	contentHandler.Routes(api)
 
 	// Start Server
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "3000"
-	}
-
 	log.Printf("GoHeadless CMS is running on port %s", port)
 	if err := app.Listen(":" + port); err != nil {
 		log.Fatalf("failed to start server: %v", err)

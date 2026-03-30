@@ -1,0 +1,392 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "This is a dynamic Headless CMS API built with Go Fiber and MongoDB.",
+        "title": "GoHeadless CMS API",
+        "termsOfService": "http://swagger.io/terms/",
+        "contact": {
+            "name": "API Support",
+            "url": "http://www.swagger.io/support",
+            "email": "support@swagger.io"
+        },
+        "license": {
+            "name": "Apache 2.0",
+            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+        },
+        "version": "1.0"
+    },
+    "host": "localhost:3000",
+    "basePath": "/api/v1",
+    "paths": {
+        "/collections": {
+            "get": {
+                "description": "Get metadata for all user-defined collections",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "collections"
+                ],
+                "summary": "List all collections",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/domain.Collection"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Define a new dynamic collection with fields",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "collections"
+                ],
+                "summary": "Create a new collection",
+                "parameters": [
+                    {
+                        "description": "Collection Definition",
+                        "name": "collection",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.Collection"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/domain.Collection"
+                        }
+                    }
+                }
+            }
+        },
+        "/collections/{slug}": {
+            "get": {
+                "description": "Get metadata for a specific collection by its unique slug",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "collections"
+                ],
+                "summary": "Get collection by slug",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Collection Slug",
+                        "name": "slug",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/domain.Collection"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Remove a collection definition by its slug",
+                "tags": [
+                    "collections"
+                ],
+                "summary": "Delete collection by slug",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Collection Slug",
+                        "name": "slug",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            }
+        },
+        "/content/{collSlug}": {
+            "get": {
+                "description": "Fetch all dynamic content records for the given collection slug",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "content"
+                ],
+                "summary": "List all records in a collection",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Collection Slug",
+                        "name": "collSlug",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "additionalProperties": true
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Upsert dynamic content into a collection. Validates against collection schema.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "content"
+                ],
+                "summary": "Create a new record",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Collection Slug",
+                        "name": "collSlug",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Dynamic Record Data",
+                        "name": "record",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/content/{collSlug}/{id}": {
+            "get": {
+                "description": "Retrieve a specific dynamic record by its unique MongoDB ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "content"
+                ],
+                "summary": "Get record by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Collection Slug",
+                        "name": "collSlug",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Record ID (Hex)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Modify a dynamic record. Validates update against collection schema.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "content"
+                ],
+                "summary": "Update record by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Collection Slug",
+                        "name": "collSlug",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Record ID (Hex)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Updated Record Data",
+                        "name": "record",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            },
+            "delete": {
+                "description": "Remove a specific dynamic record from a collection",
+                "tags": [
+                    "content"
+                ],
+                "summary": "Delete record by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Collection Slug",
+                        "name": "collSlug",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Record ID (Hex)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "domain.Collection": {
+            "type": "object",
+            "required": [
+                "fields",
+                "name",
+                "slug"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "fields": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/domain.Field"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "slug": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.Field": {
+            "type": "object",
+            "required": [
+                "name",
+                "type"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "required": {
+                    "type": "boolean"
+                },
+                "type": {
+                    "enum": [
+                        "String",
+                        "Number",
+                        "Float",
+                        "DateTime",
+                        "Bool"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/domain.FieldType"
+                        }
+                    ]
+                },
+                "unique": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "domain.FieldType": {
+            "type": "string",
+            "enum": [
+                "String",
+                "Number",
+                "Float",
+                "DateTime",
+                "Bool"
+            ],
+            "x-enum-varnames": [
+                "TypeString",
+                "TypeNumber",
+                "TypeFloat",
+                "TypeDateTime",
+                "TypeBool"
+            ]
+        }
+    }
+}

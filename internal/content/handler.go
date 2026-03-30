@@ -27,6 +27,14 @@ func (h *Handler) Routes(router fiber.Router) {
 	group.Delete("/:id", h.DeleteRecord)
 }
 
+// ListRecords list all records for a collection
+// @Summary List all records in a collection
+// @Description Fetch all dynamic content records for the given collection slug
+// @Tags content
+// @Produce json
+// @Param collSlug path string true "Collection Slug"
+// @Success 200 {array} map[string]interface{}
+// @Router /content/{collSlug} [get]
 func (h *Handler) ListRecords(c fiber.Ctx) error {
 	collSlug := c.Params("collSlug")
 	ctx := context.Background()
@@ -37,6 +45,16 @@ func (h *Handler) ListRecords(c fiber.Ctx) error {
 	return c.JSON(records)
 }
 
+// CreateRecord create a new record in a collection
+// @Summary Create a new record
+// @Description Upsert dynamic content into a collection. Validates against collection schema.
+// @Tags content
+// @Accept json
+// @Produce json
+// @Param collSlug path string true "Collection Slug"
+// @Param record body map[string]interface{} true "Dynamic Record Data"
+// @Success 201 {object} map[string]interface{}
+// @Router /content/{collSlug} [post]
 func (h *Handler) CreateRecord(c fiber.Ctx) error {
 	collSlug := c.Params("collSlug")
 	var record domain.Record
@@ -53,6 +71,15 @@ func (h *Handler) CreateRecord(c fiber.Ctx) error {
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{"id": id})
 }
 
+// GetRecord find a single record by ID
+// @Summary Get record by ID
+// @Description Retrieve a specific dynamic record by its unique MongoDB ID
+// @Tags content
+// @Produce json
+// @Param collSlug path string true "Collection Slug"
+// @Param id path string true "Record ID (Hex)"
+// @Success 200 {object} map[string]interface{}
+// @Router /content/{collSlug}/{id} [get]
 func (h *Handler) GetRecord(c fiber.Ctx) error {
 	collSlug := c.Params("collSlug")
 	idHex := c.Params("id")
@@ -69,6 +96,17 @@ func (h *Handler) GetRecord(c fiber.Ctx) error {
 	return c.JSON(record)
 }
 
+// UpdateRecord update an existing record
+// @Summary Update record by ID
+// @Description Modify a dynamic record. Validates update against collection schema.
+// @Tags content
+// @Accept json
+// @Produce json
+// @Param collSlug path string true "Collection Slug"
+// @Param id path string true "Record ID (Hex)"
+// @Param record body map[string]interface{} true "Updated Record Data"
+// @Success 204 "No Content"
+// @Router /content/{collSlug}/{id} [put]
 func (h *Handler) UpdateRecord(c fiber.Ctx) error {
 	collSlug := c.Params("collSlug")
 	idHex := c.Params("id")
@@ -90,6 +128,14 @@ func (h *Handler) UpdateRecord(c fiber.Ctx) error {
 	return c.SendStatus(fiber.StatusNoContent)
 }
 
+// DeleteRecord delete a record by ID
+// @Summary Delete record by ID
+// @Description Remove a specific dynamic record from a collection
+// @Tags content
+// @Param collSlug path string true "Collection Slug"
+// @Param id path string true "Record ID (Hex)"
+// @Success 204 "No Content"
+// @Router /content/{collSlug}/{id} [delete]
 func (h *Handler) DeleteRecord(c fiber.Ctx) error {
 	collSlug := c.Params("collSlug")
 	idHex := c.Params("id")
