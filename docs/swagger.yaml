@@ -36,6 +36,7 @@ definitions:
         - Float
         - DateTime
         - Bool
+        - Image
       unique:
         type: boolean
     required:
@@ -49,6 +50,7 @@ definitions:
     - Float
     - DateTime
     - Bool
+    - Image
     type: string
     x-enum-varnames:
     - TypeString
@@ -56,6 +58,7 @@ definitions:
     - TypeFloat
     - TypeDateTime
     - TypeBool
+    - TypeImage
 host: localhost:3000
 info:
   contact:
@@ -264,4 +267,38 @@ paths:
       summary: Update record by ID
       tags:
       - content
+  /upload/image:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Handles image file upload, converts it to WebP format, and saves
+        it to the server's local storage.
+      parameters:
+      - description: The image to upload
+        in: formData
+        name: image
+        required: true
+        type: file
+      responses:
+        "200":
+          description: Returns the image path
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid file upload request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Server error during image processing
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Upload and convert image to webp
+      tags:
+      - Upload
 swagger: "2.0"

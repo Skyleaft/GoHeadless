@@ -64,6 +64,10 @@ func (s *service) validateSchema(coll *domain.Collection, record domain.Record) 
 			if _, ok := val.(bool); !ok {
 				return fmt.Errorf("field %s must be boolean", field.Name)
 			}
+		case domain.TypeImage:
+			if _, ok := val.(string); !ok {
+				return fmt.Errorf("field %s must be image path string", field.Name)
+			}
 		case domain.TypeDateTime:
 			// For datetime we can accept string and parse to time.Time
 			if strVal, ok := val.(string); ok {

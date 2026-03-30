@@ -311,6 +311,56 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/upload/image": {
+            "post": {
+                "description": "Handles image file upload, converts it to WebP format, and saves it to the server's local storage.",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "tags": [
+                    "Upload"
+                ],
+                "summary": "Upload and convert image to webp",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "The image to upload",
+                        "name": "image",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Returns the image path",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid file upload request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server error during image processing",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -364,7 +414,8 @@ const docTemplate = `{
                         "Number",
                         "Float",
                         "DateTime",
-                        "Bool"
+                        "Bool",
+                        "Image"
                     ],
                     "allOf": [
                         {
@@ -384,14 +435,16 @@ const docTemplate = `{
                 "Number",
                 "Float",
                 "DateTime",
-                "Bool"
+                "Bool",
+                "Image"
             ],
             "x-enum-varnames": [
                 "TypeString",
                 "TypeNumber",
                 "TypeFloat",
                 "TypeDateTime",
-                "TypeBool"
+                "TypeBool",
+                "TypeImage"
             ]
         }
     }

@@ -12,11 +12,12 @@ const (
 	TypeFloat    FieldType = "Float"
 	TypeDateTime FieldType = "DateTime"
 	TypeBool     FieldType = "Bool"
+	TypeImage    FieldType = "Image"
 )
 
 type Field struct {
 	Name        string    `bson:"name" json:"name" validate:"required"`
-	Type        FieldType `bson:"type" json:"type" validate:"required,oneof=String Number Float DateTime Bool"`
+	Type        FieldType `bson:"type" json:"type" validate:"required,oneof=String Number Float DateTime Bool Image"`
 	Required    bool      `bson:"required" json:"required"`
 	Unique      bool      `bson:"unique" json:"unique"`
 	Description string    `bson:"description" json:"description"`

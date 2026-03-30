@@ -5,6 +5,7 @@ go 1.25.6
 require (
 	github.com/gofiber/fiber/v3 v3.1.0
 	github.com/joho/godotenv v1.5.1
+	github.com/nickalie/go-webpbin v0.0.0-20260302110202-4584fd694f25
 	github.com/swaggo/swag/v2 v2.0.0-rc5
 	github.com/yokeTH/gofiber-scalar/scalar/v3 v3.1.10
 	go.mongodb.org/mongo-driver v1.17.9
@@ -31,6 +32,7 @@ require (
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/montanaflynn/stats v0.7.1 // indirect
+	github.com/nickalie/go-binwrapper v0.0.0-20260217210625-2cc2a03abe15 // indirect
 	github.com/philhofer/fwd v1.2.0 // indirect
 	github.com/sv-tools/openapi v0.4.0 // indirect
 	github.com/tinylib/msgp v1.6.3 // indirect

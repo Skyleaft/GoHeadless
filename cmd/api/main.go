@@ -16,18 +16,21 @@ package main
 // @BasePath /api/v1
 
 import (
+	"context"
 	"log"
 	"os"
 
-		"GoHeadless/docs"
+	"GoHeadless/docs"
 	"GoHeadless/internal/collection"
 	"GoHeadless/internal/content"
 	"GoHeadless/internal/platform"
+	"GoHeadless/internal/upload"
 
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/middleware/cors"
 	"github.com/gofiber/fiber/v3/middleware/logger"
 	"github.com/gofiber/fiber/v3/middleware/recover"
+	"github.com/gofiber/fiber/v3/middleware/static"
 	"github.com/joho/godotenv"
 	"github.com/yokeTH/gofiber-scalar/scalar/v3"
 )
@@ -55,7 +58,7 @@ func main() {
 
 	// 2. Setup Platform (MongoDB)
 	mongoDB := platform.NewMongoDB(mongoURI, dbName)
-	defer mongoDB.Client.Disconnect(nil)
+	defer mongoDB.Client.Disconnect(context.Background())
 
 	// 3. Initialize Repositories
 	collRepo := collection.NewRepository(mongoDB.Database)
@@ -64,10 +67,12 @@ func main() {
 	// 4. Initialize Services
 	collService := collection.NewService(collRepo)
 	contentService := content.NewService(recordRepo, collRepo)
+	uploadService := upload.NewService("./uploads")
 
 	// 5. Initialize Handlers
 	collHandler := collection.NewHandler(collService)
 	contentHandler := content.NewHandler(contentService)
+	uploadHandler := upload.NewHandler(uploadService)
 
 	// 6. Setup Fiber Application
 	app := fiber.New(fiber.Config{
@@ -82,9 +87,13 @@ func main() {
 	// 7. Define Routes
 	app.Get("/docs/*", scalar.New())
 
+	// Static files for uploaded images
+	app.Use("/uploads", static.New("./uploads"))
+
 	api := app.Group("/api/v1")
 	collHandler.Routes(api)
 	contentHandler.Routes(api)
+	uploadHandler.Routes(api)
 
 	// Start Server
 	log.Printf("GoHeadless CMS is running on port %s", port)
