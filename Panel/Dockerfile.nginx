@@ -16,7 +16,7 @@ RUN pnpm install --frozen-lockfile
 COPY . .
 
 # Build the application (produces static files in build/ directory)
-RUN pnpm build
+RUN pnpm build && ls -la /app/build/
 
 # Production stage with Nginx
 FROM nginx:1.25-alpine
@@ -24,11 +24,11 @@ FROM nginx:1.25-alpine
 # Remove default nginx config
 RUN rm /etc/nginx/conf.d/default.conf
 
-# Copy nginx config (will be added via docker-compose volume mount)
-# The config at /etc/nginx/conf.d/default.conf is mounted from ./nginx/nginx.conf
-
-# Copy built files from builder stage
+# Copy built files from builder stage to nginx html directory
 COPY --from=builder /app/build /usr/share/nginx/html/admin
+
+# List contents to verify
+RUN ls -la /usr/share/nginx/html/admin/
 
 # Expose port
 EXPOSE 80
