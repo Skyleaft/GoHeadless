@@ -42,7 +42,8 @@ DB_NAME=goheadless_cms
 
 # Ports
 MONGO_PORT=27017
-APP_PORT=80
+APP_PORT=3030         # Host port (external access)
+NGINX_PORT=80        # Container internal port
 ```
 
 ## Docker Commands
@@ -110,9 +111,18 @@ docker-compose build nginx
 
 | Service | Internal Port | External Port | Description |
 |---------|--------------|---------------|-------------|
-| Nginx   | 80           | 80 (configurable) | Reverse proxy & static files |
+| Nginx   | 80           | 3030 (via APP_PORT) | Reverse proxy & static files |
 | Go API  | 3000         | N/A (internal) | Backend API |
-| MongoDB | 27017        | 27017 (configurable) | Database |
+| MongoDB | 27017        | 27017 (via MONGO_PORT) | Database |
+
+### Custom Port Configuration
+
+To change the external port (e.g., 3030:80), set in your `.env`:
+```env
+APP_PORT=3030
+NGINX_PORT=80
+```
+This maps host port 3030 to container port 80.
 
 ## Nginx Routing
 
