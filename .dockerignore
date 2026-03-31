@@ -1,0 +1,11 @@
+node_modules
+.git
+.gitignore
+.env
+*.md
+.vscode
+.idea
+Panel/
+uploads/
+*.log
+.DS_Store
