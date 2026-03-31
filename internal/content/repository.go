@@ -60,3 +60,7 @@ func (r *mongoRepo) Delete(ctx context.Context, collectionName string, id primit
 	_, err := r.db.Collection(collectionName).DeleteOne(ctx, bson.M{"_id": id})
 	return err
 }
+
+func (r *mongoRepo) CountRecords(ctx context.Context, collectionName string) (int64, error) {
+	return r.db.Collection(collectionName).CountDocuments(ctx, bson.M{})
+}

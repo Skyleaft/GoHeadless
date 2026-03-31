@@ -55,3 +55,7 @@ func (r *mongoRepo) Delete(ctx context.Context, slug string) error {
 	_, err := r.coll.DeleteOne(ctx, bson.M{"slug": slug})
 	return err
 }
+
+func (r *mongoRepo) CountCollections(ctx context.Context) (int64, error) {
+	return r.coll.CountDocuments(ctx, bson.M{})
+}

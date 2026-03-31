@@ -7,6 +7,7 @@ import (
 type CollectionReader interface {
 	FindAll(ctx context.Context) ([]Collection, error)
 	FindBySlug(ctx context.Context, slug string) (*Collection, error)
+	CountCollections(ctx context.Context) (int64, error)
 }
 
 type CollectionWriter interface {

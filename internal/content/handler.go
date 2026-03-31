@@ -19,12 +19,11 @@ func NewHandler(service Service) *Handler {
 }
 
 func (h *Handler) Routes(router fiber.Router) {
-	group := router.Group("/content/:collSlug")
-	group.Get("/", h.ListRecords)
-	group.Post("/", h.CreateRecord)
-	group.Get("/:id", h.GetRecord)
-	group.Put("/:id", h.UpdateRecord)
-	group.Delete("/:id", h.DeleteRecord)
+	router.Get("/", h.ListRecords)
+	router.Post("/", h.CreateRecord)
+	router.Get("/:id", h.GetRecord)
+	router.Put("/:id", h.UpdateRecord)
+	router.Delete("/:id", h.DeleteRecord)
 }
 
 // ListRecords list all records for a collection
@@ -36,9 +35,9 @@ func (h *Handler) Routes(router fiber.Router) {
 // @Success 200 {array} map[string]interface{}
 // @Router /content/{collSlug} [get]
 func (h *Handler) ListRecords(c fiber.Ctx) error {
-	collSlug := c.Params("collSlug")
+	slug := c.Params("slug")
 	ctx := context.Background()
-	records, err := h.service.GetRecords(ctx, collSlug)
+	records, err := h.service.GetRecords(ctx, slug)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
@@ -56,14 +55,14 @@ func (h *Handler) ListRecords(c fiber.Ctx) error {
 // @Success 201 {object} map[string]interface{}
 // @Router /content/{collSlug} [post]
 func (h *Handler) CreateRecord(c fiber.Ctx) error {
-	collSlug := c.Params("collSlug")
+	slug := c.Params("slug")
 	var record domain.Record
 	if err := c.Bind().Body(&record); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
 	ctx := context.Background()
-	id, err := h.service.CreateRecord(ctx, collSlug, record)
+	id, err := h.service.CreateRecord(ctx, slug, record)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
@@ -81,7 +80,7 @@ func (h *Handler) CreateRecord(c fiber.Ctx) error {
 // @Success 200 {object} map[string]interface{}
 // @Router /content/{collSlug}/{id} [get]
 func (h *Handler) GetRecord(c fiber.Ctx) error {
-	collSlug := c.Params("collSlug")
+	slug := c.Params("slug")
 	idHex := c.Params("id")
 	id, err := primitive.ObjectIDFromHex(idHex)
 	if err != nil {
@@ -89,7 +88,7 @@ func (h *Handler) GetRecord(c fiber.Ctx) error {
 	}
 
 	ctx := context.Background()
-	record, err := h.service.GetRecord(ctx, collSlug, id)
+	record, err := h.service.GetRecord(ctx, slug, id)
 	if err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "record not found"})
 	}
@@ -108,7 +107,7 @@ func (h *Handler) GetRecord(c fiber.Ctx) error {
 // @Success 204 "No Content"
 // @Router /content/{collSlug}/{id} [put]
 func (h *Handler) UpdateRecord(c fiber.Ctx) error {
-	collSlug := c.Params("collSlug")
+	slug := c.Params("slug")
 	idHex := c.Params("id")
 	id, err := primitive.ObjectIDFromHex(idHex)
 	if err != nil {
@@ -121,7 +120,7 @@ func (h *Handler) UpdateRecord(c fiber.Ctx) error {
 	}
 
 	ctx := context.Background()
-	if err := h.service.UpdateRecord(ctx, collSlug, id, record); err != nil {
+	if err := h.service.UpdateRecord(ctx, slug, id, record); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
@@ -137,7 +136,7 @@ func (h *Handler) UpdateRecord(c fiber.Ctx) error {
 // @Success 204 "No Content"
 // @Router /content/{collSlug}/{id} [delete]
 func (h *Handler) DeleteRecord(c fiber.Ctx) error {
-	collSlug := c.Params("collSlug")
+	slug := c.Params("slug")
 	idHex := c.Params("id")
 	id, err := primitive.ObjectIDFromHex(idHex)
 	if err != nil {
@@ -145,7 +144,7 @@ func (h *Handler) DeleteRecord(c fiber.Ctx) error {
 	}
 
 	ctx := context.Background()
-	if err := h.service.DeleteRecord(ctx, collSlug, id); err != nil {
+	if err := h.service.DeleteRecord(ctx, slug, id); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Field, ContentRecord } from '$lib/types/collection';
 	import { isStructuralType } from '$lib/types/collection';
+	import { toast } from '$lib/stores/toast';
 	import Badge from '$lib/shared/Badge.svelte';
 	import Button from '$lib/shared/Button.svelte';
 	import EmptyState from '$lib/shared/EmptyState.svelte';
@@ -12,9 +13,19 @@
 		collectionSlug: string;
 		ondelete?: (id: string) => void;
 		loading?: boolean;
+		canUpdate?: boolean;
+		canDelete?: boolean;
 	}
 
-	let { fields, records, collectionSlug, ondelete, loading = false }: Props = $props();
+	let {
+		fields,
+		records,
+		collectionSlug,
+		ondelete,
+		loading = false,
+		canUpdate = true,
+		canDelete = true
+	}: Props = $props();
 
 	let deleteTarget = $state<string | null>(null);
 	let deleteLoading = $state(false);
@@ -120,16 +131,23 @@
 							<!-- Actions -->
 							<td class="px-4 py-3 text-right">
 								<div class="flex items-center justify-end gap-2">
-									<a
-										href="/content/{collectionSlug}/{id}"
-										class="inline-flex h-7 items-center gap-1 rounded-lg px-2.5 text-xs font-medium transition hover:bg-[--surface-hover]"
-										style="color: var(--brand)"
-									>Edit</a>
-									<button
-										onclick={() => (deleteTarget = id)}
-										class="flex h-7 w-7 items-center justify-center rounded-lg text-red-400 transition hover:bg-red-50 hover:text-red-600"
-										title="Delete record"
-									>🗑</button>
+									{#if canUpdate}
+										<a
+											href="/content/{collectionSlug}/{id}"
+											class="inline-flex h-7 items-center gap-1 rounded-lg px-2.5 text-xs font-medium transition hover:bg-[--surface-hover]"
+											style="color: var(--brand)"
+										>Edit</a>
+									{/if}
+									{#if canDelete}
+										<button
+											onclick={() => (deleteTarget = id)}
+											class="flex h-7 w-7 items-center justify-center rounded-lg text-red-400 transition hover:bg-red-50 hover:text-red-600"
+											title="Delete record"
+										>🗑</button>
+									{/if}
+									{#if !canUpdate && !canDelete}
+										<span class="text-xs text-[--text-muted]">Read only</span>
+									{/if}
 								</div>
 							</td>
 						</tr>

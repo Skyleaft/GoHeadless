@@ -89,12 +89,26 @@ export interface Field {
 	props?: Record<string, unknown>;
 }
 
+export interface CRUDPolicy {
+	create: string[];
+	read: string[];
+	update: string[];
+	delete: string[];
+}
+
+export interface AccessControl {
+	is_public: boolean;
+	allowed_roles?: string[];
+	crud_policy?: CRUDPolicy;
+}
+
 export interface Collection {
 	id?: string;
 	name: string;
 	slug: string;
 	description: string;
 	fields: Field[];
+	access?: AccessControl;
 }
 
 // Record is a dynamic map from the content API

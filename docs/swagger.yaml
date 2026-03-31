@@ -1,7 +1,56 @@
 basePath: /api/v1
 definitions:
+  auth.LoginRequest:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  auth.LoginResponse:
+    properties:
+      token:
+        type: string
+      user:
+        $ref: '#/definitions/domain.User'
+    type: object
+  domain.AccessControl:
+    properties:
+      allowed_roles:
+        items:
+          type: string
+        type: array
+      crud_policy:
+        $ref: '#/definitions/domain.CRUDPolicy'
+      is_public:
+        type: boolean
+    type: object
+  domain.CRUDPolicy:
+    properties:
+      create:
+        items:
+          type: string
+        type: array
+      delete:
+        items:
+          type: string
+        type: array
+      read:
+        items:
+          type: string
+        type: array
+      update:
+        items:
+          type: string
+        type: array
+    type: object
   domain.Collection:
     properties:
+      access:
+        $ref: '#/definitions/domain.AccessControl'
       description:
         type: string
       fields:
@@ -187,6 +236,24 @@ definitions:
         description: UI display field
         type: string
     type: object
+  domain.User:
+    properties:
+      active_status:
+        type: boolean
+      email:
+        type: string
+      id:
+        type: string
+      is_initial_admin:
+        type: boolean
+      role_id:
+        type: string
+      username:
+        type: string
+    required:
+    - role_id
+    - username
+    type: object
   domain.ValidationRules:
     properties:
       max:
@@ -199,6 +266,17 @@ definitions:
         type: integer
       regex:
         type: string
+    type: object
+  setup.SetupRequest:
+    properties:
+      password:
+        minLength: 8
+        type: string
+      username:
+        type: string
+    required:
+    - password
+    - username
     type: object
 host: localhost:3000
 info:
@@ -214,6 +292,40 @@ info:
   title: GoHeadless CMS API
   version: "1.0"
 paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate with username and password, returns a JWT token
+      parameters:
+      - description: Login credentials
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/auth.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/auth.LoginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Login user
+      tags:
+      - auth
   /collections:
     get:
       description: Get metadata for all user-defined collections
@@ -408,6 +520,57 @@ paths:
       summary: Update record by ID
       tags:
       - content
+  /setup:
+    post:
+      consumes:
+      - application/json
+      description: This endpoint only works when no users exist in the system. Calling
+        it after initial setup returns a 403.
+      parameters:
+      - description: Initial credentials
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/setup.SetupRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create the initial superadmin user
+      tags:
+      - setup
+  /setup/status:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: boolean
+            type: object
+      summary: Check if system setup is required
+      tags:
+      - setup
   /upload:
     delete:
       description: Deletes a file from the server's local storage based on its path.

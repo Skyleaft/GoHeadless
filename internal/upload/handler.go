@@ -16,10 +16,9 @@ func NewHandler(service Service) *Handler {
 }
 
 func (h *Handler) Routes(router fiber.Router) {
-	group := router.Group("/upload")
-	group.Post("/", h.UploadFile)
-	group.Delete("/", h.DeleteFile)
-	group.Put("/", h.UpdateFile)
+	router.Post("/", h.UploadFile)
+	router.Delete("/", h.DeleteFile)
+	router.Put("/", h.UpdateFile)
 }
 
 // UploadFile handles generic file uploads

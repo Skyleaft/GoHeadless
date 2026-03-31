@@ -18,11 +18,10 @@ func NewHandler(service Service) *Handler {
 }
 
 func (h *Handler) Routes(router fiber.Router) {
-	group := router.Group("/collections")
-	group.Get("/", h.ListCollections)
-	group.Post("/", h.CreateCollection)
-	group.Get("/:slug", h.GetCollection)
-	group.Delete("/:slug", h.DeleteCollection)
+	router.Get("/", h.ListCollections)
+	router.Post("/", h.CreateCollection)
+	router.Get("/:slug", h.GetCollection)
+	router.Delete("/:slug", h.DeleteCollection)
 }
 
 // ListCollections list all collections

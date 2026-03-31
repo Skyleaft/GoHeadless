@@ -21,9 +21,12 @@ import (
 	"os"
 
 	"GoHeadless/docs"
+	"GoHeadless/internal/auth"
 	"GoHeadless/internal/collection"
 	"GoHeadless/internal/content"
+	"GoHeadless/internal/middleware"
 	"GoHeadless/internal/platform"
+	"GoHeadless/internal/setup"
 	"GoHeadless/internal/upload"
 
 	"github.com/gofiber/fiber/v3"
@@ -63,16 +66,24 @@ func main() {
 	// 3. Initialize Repositories
 	collRepo := collection.NewRepository(mongoDB.Database)
 	recordRepo := content.NewRepository(mongoDB.Database)
+	authRepo := auth.NewRepository(mongoDB.Database)
 
 	// 4. Initialize Services
 	collService := collection.NewService(collRepo)
 	contentService := content.NewService(recordRepo, collRepo)
 	uploadService := upload.NewService("./uploads")
+	authService := auth.NewService(authRepo, collRepo, recordRepo)
+	setupService := setup.NewService(authRepo)
 
 	// 5. Initialize Handlers
 	collHandler := collection.NewHandler(collService)
 	contentHandler := content.NewHandler(contentService)
 	uploadHandler := upload.NewHandler(uploadService)
+	authHandler := auth.NewHandler(authService)
+	setupHandler := setup.NewHandler(setupService)
+
+	// 6. Initialize Middleware
+	rbac := middleware.NewRBACMiddleware(authService, collService)
 
 	// 6. Setup Fiber Application
 	app := fiber.New(fiber.Config{
@@ -91,9 +102,25 @@ func main() {
 	app.Use("/uploads", static.New("./uploads"))
 
 	api := app.Group("/api/v1")
-	collHandler.Routes(api)
-	contentHandler.Routes(api)
-	uploadHandler.Routes(api)
+
+	// Public Setup & Auth
+	setupHandler.Routes(api)
+	authHandler.PublicRoutes(api)
+
+	// Protected Routes (Require Authentication)
+	protected := api.Group("", rbac.Authenticate)
+
+	// Collection & Content with RBAC
+	collectionGroup := protected.Group("/collections", rbac.AuthorizeCollection)
+	contentGroup := protected.Group("/content/:slug", rbac.AuthorizeCollection)
+
+	collHandler.Routes(collectionGroup)
+	contentHandler.Routes(contentGroup)
+	uploadHandler.Routes(protected)
+
+	// Admin-only Routes (Superadmin required)
+	adminGroup := protected.Group("", rbac.RequireSuperadmin)
+	authHandler.AdminRoutes(adminGroup)
 
 	// Start Server
 	log.Printf("GoHeadless CMS is running on port %s", port)

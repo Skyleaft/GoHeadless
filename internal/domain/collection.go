@@ -106,10 +106,24 @@ type Field struct {
 	Props map[string]interface{} `bson:"props,omitempty" json:"props,omitempty"`
 }
 
+type CRUDPolicy struct {
+	Create []string `bson:"create" json:"create"`
+	Read   []string `bson:"read" json:"read"`
+	Update []string `bson:"update" json:"update"`
+	Delete []string `bson:"delete" json:"delete"`
+}
+
+type AccessControl struct {
+	IsPublic     bool       `bson:"is_public" json:"is_public"`
+	AllowedRoles []string   `bson:"allowed_roles,omitempty" json:"allowed_roles,omitempty"`
+	CRUDPolicy   CRUDPolicy `bson:"crud_policy,omitempty" json:"crud_policy,omitempty"`
+}
+
 type Collection struct {
 	ID          primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
 	Name        string             `bson:"name" json:"name" validate:"required"`
 	Slug        string             `bson:"slug" json:"slug" validate:"required"`
 	Fields      []Field            `bson:"fields" json:"fields" validate:"required,dive"`
 	Description string             `bson:"description" json:"description"`
+	Access      *AccessControl     `bson:"access,omitempty" json:"access,omitempty"`
 }

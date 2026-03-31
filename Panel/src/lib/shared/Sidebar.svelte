@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { collectionsStore } from '$lib/stores/collections';
+	import { auth } from '$lib/stores/auth';
 	import Spinner from './Spinner.svelte';
 
 	interface Props {
@@ -13,6 +14,11 @@
 	const navItems = [
 		{ href: '/', icon: '⊞', label: 'Dashboard' },
 		{ href: '/collections', icon: '🗂', label: 'Collections' }
+	];
+
+	const adminItems = [
+		{ href: '/admin/users', icon: '👥', label: 'Users' },
+		{ href: '/admin/roles', icon: '🛡️', label: 'Roles' }
 	];
 
 	function isActive(href: string) {
@@ -71,6 +77,31 @@
 			</a>
 		{/each}
 	</nav>
+
+	{#if $auth.user?.is_initial_admin}
+		<div class="px-4 py-2 mt-2">
+			<span class="section-title">Administration</span>
+		</div>
+		<nav class="flex flex-col gap-1 px-3 flex-shrink-0">
+			{#each adminItems as item}
+				<a
+					href={item.href}
+					class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-150"
+					style="
+						color: {isActive(item.href) ? 'var(--brand)' : 'var(--text-secondary)'};
+						background: {isActive(item.href) ? 'var(--brand-light)' : 'transparent'};
+					"
+					onmouseenter={(e) => { if (!isActive(item.href)) (e.currentTarget as HTMLElement).style.background = 'var(--surface-alt)'; }}
+					onmouseleave={(e) => { if (!isActive(item.href)) (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
+				>
+					<span class="text-base flex-shrink-0">{item.icon}</span>
+					{#if !collapsed}
+						<span class="truncate">{item.label}</span>
+					{/if}
+				</a>
+			{/each}
+		</nav>
+	{/if}
 
 	<hr style="border-color: var(--border); margin: 0" />
 

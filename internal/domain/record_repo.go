@@ -9,6 +9,7 @@ import (
 type RecordReader interface {
 	FindAll(ctx context.Context, collectionName string) ([]Record, error)
 	FindByID(ctx context.Context, collectionName string, id primitive.ObjectID) (Record, error)
+	CountRecords(ctx context.Context, collectionName string) (int64, error)
 }
 
 type RecordWriter interface {

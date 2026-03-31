@@ -15,6 +15,11 @@
 	let slug = $state(initial?.slug ?? '');
 	let description = $state(initial?.description ?? '');
 	let fields = $state<Field[]>(initial?.fields ?? []);
+	let access = $state(initial?.access ?? {
+		is_public: false,
+		allowed_roles: [],
+		crud_policy: { create: [], read: [], update: [], delete: [] }
+	});
 	let slugEdited = $state(!!initial?.slug);
 
 	// Auto-generate slug from name
@@ -55,7 +60,7 @@
 	function handleSubmit(e: Event) {
 		e.preventDefault();
 		if (!validate()) return;
-		onsubmit?.({ name, slug, description, fields });
+		onsubmit?.({ name, slug, description, fields, access });
 	}
 </script>
 
@@ -147,6 +152,53 @@
 					/>
 				{/each}
 			{/if}
+		</div>
+	</div>
+
+	<!-- Access Control section -->
+	<div class="card">
+		<div class="card-header border-b border-[--border]">
+			<h2 class="text-base font-semibold" style="color: var(--text-primary)">Visibility & Access</h2>
+			<p class="text-sm mt-0.5" style="color: var(--text-muted)">
+				Configure who can see and manage this collection's data via the API.
+			</p>
+		</div>
+		<div class="card-body flex flex-col gap-6">
+			<div class="flex items-center justify-between p-4 rounded-xl border border-[--border] bg-[--surface-alt]/30">
+				<div class="flex flex-col gap-1">
+					<label for="isPublic" class="text-sm font-semibold">Public Access (Read-Only)</label>
+					<p class="text-xs text-[--text-muted]">If enabled, anyone can GET records without authentication.</p>
+				</div>
+				<label class="relative inline-flex cursor-pointer items-center">
+					<input id="isPublic" type="checkbox" bind:checked={access.is_public} class="sr-only peer" />
+					<div class="peer h-6 w-11 rounded-full bg-slate-200 after:absolute after:top-[2px] after:left-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-[--brand] peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[--brand]/20 dark:bg-slate-700"></div>
+				</label>
+			</div>
+
+			<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+				{#each ['create', 'read', 'update', 'delete'] as action}
+					<div class="flex flex-col gap-1.5 p-3 rounded-lg border border-[--border]">
+						<label class="text-xs font-bold uppercase tracking-wider text-[--text-muted]">
+							Can {action} data
+						</label>
+						<p class="text-[10px] text-[--text-muted] mb-1">Role names/IDs (comma separated)</p>
+						<input
+							type="text"
+							placeholder="Admin, Editor"
+							value={access.crud_policy?.[action as keyof typeof access.crud_policy]?.join(', ') ?? ''}
+							oninput={(e) => {
+								const val = (e.target as HTMLInputElement).value;
+								const roles = val.split(',').map(r => r.trim()).filter(Boolean);
+								if (!access.crud_policy) access.crud_policy = { create: [], read: [], update: [], delete: [] };
+								// @ts-ignore
+								access.crud_policy[action] = roles;
+							}}
+							class="h-8 rounded md px-2 text-xs"
+							style="background: var(--surface); border-color: var(--border); color: var(--text-primary)"
+						/>
+					</div>
+				{/each}
+			</div>
 		</div>
 	</div>
 
