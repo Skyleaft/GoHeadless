@@ -9,10 +9,10 @@ This directory contains Docker configuration for running GoHeadless CMS with:
 
 ```
 Request → Nginx (:80) 
-           ├── /admin/ → Static files (Svelte SPA)
-           ├── /api/ → Go API (:3000)
-           ├── /uploads/ → Go API uploads
-           └── /docs/ → Swagger documentation
+           ├── / → Static files (Svelte SPA)
+           ├── /api/* → Go API (:3000)
+           ├── /docs/* → Go API (Swagger)
+           └── /uploads/* → Go API uploads
 ```
 
 ## Quick Start
@@ -25,9 +25,9 @@ docker-compose up --build -d
 
 ### 2. Access the Application
 
-- **Admin Panel**: http://localhost/admin
-- **API**: http://localhost/api/v1
-- **Swagger Docs**: http://localhost/docs
+- **Admin Panel**: http://localhost:3030/
+- **API**: http://localhost:3030/api/v1/
+- **Swagger Docs**: http://localhost:3030/docs/
 - **MongoDB**: localhost:27017
 
 ## Environment Variables
@@ -128,8 +128,7 @@ This maps host port 3030 to container port 80.
 
 | Path | Description |
 |------|-------------|
-| `/` | Redirects to `/admin/` |
-| `/admin` | Admin panel SPA |
-| `/api/` | Proxied to Go API |
-| `/docs/` | Proxied to Go API (Swagger) |
-| `/uploads/` | Proxied to Go API (uploaded files) |
+| `/` | Admin panel SPA (frontend) |
+| `/api/*` | Proxied to Go API |
+| `/docs/*` | Proxied to Go API (Swagger) |
+| `/uploads/*` | Proxied to Go API (uploaded files) |

@@ -82,9 +82,9 @@ docker-compose up --build -d
 | **Nginx** | Reverse proxy + admin panel | 80 |
 
 ### Access Points
-- **Admin Panel**: http://localhost/admin
-- **API**: http://localhost/api/v1
-- **Swagger Docs**: http://localhost/docs
+- **Admin Panel**: http://localhost:3030/
+- **API**: http://localhost:3030/api/v1/
+- **Swagger Docs**: http://localhost:3030/docs/
 
 ### Environment Variables
 Create a `.env` file:
