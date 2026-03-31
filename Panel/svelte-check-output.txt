@@ -1,0 +1,159 @@
+e:\repo\go\GoHeadless\Panel\[32msrc\lib\features\collections\FieldEditor.svelte[39m:105:5
+[33mWarn[39m: A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control (svelte)
+
+e:\repo\go\GoHeadless\Panel\[32msrc\lib\features\collections\FieldEditor.svelte[39m:116:5
+[33mWarn[39m: A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control (svelte)
+
+e:\repo\go\GoHeadless\Panel\[32msrc\lib\features\collections\FieldEditor.svelte[39m:137:7
+[33mWarn[39m: A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control (svelte)
+
+e:\repo\go\GoHeadless\Panel\[32msrc\lib\features\collections\FieldEditor.svelte[39m:168:7
+[33mWarn[39m: A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control (svelte)
+
+e:\repo\go\GoHeadless\Panel\[32msrc\lib\features\collections\FieldEditor.svelte[39m:177:7
+[33mWarn[39m: A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control (svelte)
+
+e:\repo\go\GoHeadless\Panel\[32msrc\lib\features\collections\FieldEditor.svelte[39m:203:8
+[33mWarn[39m: A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control (svelte)
+
+e:\repo\go\GoHeadless\Panel\[32msrc\lib\features\collections\FieldEditor.svelte[39m:216:8
+[33mWarn[39m: A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control (svelte)
+
+e:\repo\go\GoHeadless\Panel\[32msrc\lib\features\collections\FieldEditor.svelte[39m:230:8
+[33mWarn[39m: A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control (svelte)
+
+e:\repo\go\GoHeadless\Panel\[32msrc\lib\features\collections\FieldEditor.svelte[39m:243:8
+[33mWarn[39m: A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control (svelte)
+
+e:\repo\go\GoHeadless\Panel\[32msrc\lib\features\collections\FieldEditor.svelte[39m:256:8
+[33mWarn[39m: A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control (svelte)
+
+e:\repo\go\GoHeadless\Panel\[32msrc\lib\features\collections\FieldEditor.svelte[39m:283:7
+[33mWarn[39m: `<svelte:self>` is deprecated ΓÇö use self-imports (e.g. `import FieldEditor from './FieldEditor.svelte'`) instead
+https://svelte.dev/e/svelte_self_deprecated (svelte)
+
+e:\repo\go\GoHeadless\Panel\[32msrc\lib\features\collections\CollectionForm.svelte[39m:14:20
+[33mWarn[39m: This reference only captures the initial value of `initial`. Did you mean to reference it inside a derived instead?
+https://svelte.dev/e/state_referenced_locally (svelte)
+
+e:\repo\go\GoHeadless\Panel\[32msrc\lib\features\collections\CollectionForm.svelte[39m:15:20
+[33mWarn[39m: This reference only captures the initial value of `initial`. Did you mean to reference it inside a derived instead?
+https://svelte.dev/e/state_referenced_locally (svelte)
+
+e:\repo\go\GoHeadless\Panel\[32msrc\lib\features\collections\CollectionForm.svelte[39m:16:27
+[33mWarn[39m: This reference only captures the initial value of `initial`. Did you mean to reference it inside a derived instead?
+https://svelte.dev/e/state_referenced_locally (svelte)
+
+e:\repo\go\GoHeadless\Panel\[32msrc\lib\features\collections\CollectionForm.svelte[39m:17:31
+[33mWarn[39m: This reference only captures the initial value of `initial`. Did you mean to reference it inside a derived instead?
+https://svelte.dev/e/state_referenced_locally (svelte)
+
+e:\repo\go\GoHeadless\Panel\[32msrc\lib\features\collections\CollectionForm.svelte[39m:18:28
+[33mWarn[39m: This reference only captures the initial value of `initial`. Did you mean to reference it inside a derived instead?
+https://svelte.dev/e/state_referenced_locally (svelte)
+
+e:\repo\go\GoHeadless\Panel\[32msrc\lib\features\collections\CollectionForm.svelte[39m:73:5
+[33mWarn[39m: A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control (svelte)
+
+e:\repo\go\GoHeadless\Panel\[32msrc\lib\features\collections\CollectionForm.svelte[39m:86:5
+[33mWarn[39m: A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control (svelte)
+
+e:\repo\go\GoHeadless\Panel\[32msrc\lib\features\collections\CollectionForm.svelte[39m:106:5
+[33mWarn[39m: A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control (svelte)
+
+e:\repo\go\GoHeadless\Panel\[32msrc\lib\features\collections\CollectionList.svelte[39m:121:7
+[31mError[39m: Type 'string | null' is not assignable to type 'boolean | undefined'.
+  Type 'null' is not assignable to type 'boolean | undefined'. (ts)
+
+e:\repo\go\GoHeadless\Panel\[32msrc\lib\features\content\FieldRenderer.svelte[39m:94:36
+[31mError[39m: Cannot bind to constant
+https://svelte.dev/e/constant_binding (svelte)
+
+e:\repo\go\GoHeadless\Panel\[32msrc\lib\features\content\RecordForm.svelte[39m:18:3
+[33mWarn[39m: This reference only captures the initial value of `initial`. Did you mean to reference it inside a derived instead?
+https://svelte.dev/e/state_referenced_locally (svelte)
+
+e:\repo\go\GoHeadless\Panel\[32msrc\lib\features\content\RecordForm.svelte[39m:19:4
+[33mWarn[39m: This reference only captures the initial value of `fields`. Did you mean to reference it inside a derived instead?
+https://svelte.dev/e/state_referenced_locally (svelte)
+
+e:\repo\go\GoHeadless\Panel\[32msrc\lib\features\content\RecordTable.svelte[39m:155:7
+[31mError[39m: Type 'string | null' is not assignable to type 'boolean | undefined'.
+  Type 'null' is not assignable to type 'boolean | undefined'. (ts)
+
+e:\repo\go\GoHeadless\Panel\[32msrc\lib\shared\Input.svelte[39m:32:18
+[33mWarn[39m: This reference only captures the initial value of `id`. Did you mean to reference it inside a closure instead?
+https://svelte.dev/e/state_referenced_locally (svelte)
+
+e:\repo\go\GoHeadless\Panel\[32msrc\routes\collections\[slug]\+page.svelte[39m:21:22
+[31mError[39m: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'. (ts)
+
+e:\repo\go\GoHeadless\Panel\[32msrc\routes\collections\[slug]\+page.svelte[39m:33:32
+[31mError[39m: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'. (ts)
+
+e:\repo\go\GoHeadless\Panel\[32msrc\routes\collections\[slug]\+page.svelte[39m:34:33
+[31mError[39m: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'. (ts)
+
+e:\repo\go\GoHeadless\Panel\[32msrc\routes\content\[slug]\+page.svelte[39m:19:23
+[31mError[39m: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'. (ts)
+
+e:\repo\go\GoHeadless\Panel\[32msrc\routes\content\[slug]\+page.svelte[39m:20:20
+[31mError[39m: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'. (ts)
+
+e:\repo\go\GoHeadless\Panel\[32msrc\routes\content\[slug]\+page.svelte[39m:33:28
+[31mError[39m: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'. (ts)
+
+e:\repo\go\GoHeadless\Panel\[32msrc\routes\content\[slug]\+page.svelte[39m:77:4
+[31mError[39m: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'. (ts)
+
+e:\repo\go\GoHeadless\Panel\[32msrc\routes\content\[slug]\[id]\+page.svelte[39m:23:23
+[31mError[39m: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'. (ts)
+
+e:\repo\go\GoHeadless\Panel\[32msrc\routes\content\[slug]\[id]\+page.svelte[39m:24:19
+[31mError[39m: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'. (ts)
+
+e:\repo\go\GoHeadless\Panel\[32msrc\routes\content\[slug]\[id]\+page.svelte[39m:38:28
+[31mError[39m: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'. (ts)
+
+e:\repo\go\GoHeadless\Panel\[32msrc\routes\content\[slug]\[id]\+page.svelte[39m:74:4
+[31mError[39m: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'. (ts)
+
+e:\repo\go\GoHeadless\Panel\[32msrc\routes\content\[slug]\new\+page.svelte[39m:18:22
+[31mError[39m: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'. (ts)
+
+e:\repo\go\GoHeadless\Panel\[32msrc\routes\content\[slug]\new\+page.svelte[39m:30:43
+[31mError[39m: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'. (ts)
+
+e:\repo\go\GoHeadless\Panel\[32msrc\routes\content\[slug]\new\+page.svelte[39m:63:4
+[31mError[39m: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'. (ts)
+
+====================================
+[31msvelte-check found 17 errors and 22 warnings in 11 files
+[39m
