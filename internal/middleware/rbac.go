@@ -60,7 +60,9 @@ func (m *RBACMiddleware) RequireSuperadmin(c fiber.Ctx) error {
 	return c.Next()
 }
 
-// AuthorizeCollection checks if the authenticated user has access to the requested collection
+// AuthorizeCollection checks if the authenticated user has access to the requested collection.
+// For public collections with GET requests, it allows access without authentication.
+// For all other cases, it requires and validates authentication.
 func (m *RBACMiddleware) AuthorizeCollection(c fiber.Ctx) error {
 	slug := c.Params("slug")
 	if slug == "" {
@@ -76,26 +78,32 @@ func (m *RBACMiddleware) AuthorizeCollection(c fiber.Ctx) error {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "collection not found"})
 	}
 
-	// 2. Superuser Bypass
+	method := c.Method()
+
+	// 2. Check Public Access (Read only) - allows bypass of authentication
+	// If Access is nil or IsPublic is true, allow GET requests without authentication
+	if coll.Access != nil && coll.Access.IsPublic && method == fiber.MethodGet {
+		return c.Next()
+	}
+
+	// 3. For non-public collections or non-GET methods, require authentication
+	// Only process auth if it hasn't been done already (check for user_id in locals)
+	hasAuth := c.Locals("user_id") != nil
+	if !hasAuth {
+		// Run authentication inline
+		if err := m.Authenticate(c); err != nil {
+			return err
+		}
+	}
+
+	// 4. Superuser Bypass (check again after auth)
 	isSuperuser, _ := c.Locals("is_superuser").(bool)
 	if isSuperuser {
 		return c.Next()
 	}
 
-	// 3. Check Public Access (Read only)
-	method := c.Method()
-	if coll.Access != nil && coll.Access.IsPublic && method == fiber.MethodGet {
-		return c.Next()
-	}
-
-	// 4. Require Auth for everything else
-	roleID, _ := c.Locals("role_id").(string)
-	if roleID == "" {
-		// If we reached here without a role_id, it means Authenticate middleware was skipped or failed
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "authentication required"})
-	}
-
 	// 5. Check Granular Permissions (CRUD Policy)
+	roleID, _ := c.Locals("role_id").(string)
 	if coll.Access != nil {
 		var allowedRoles []string
 		switch method {

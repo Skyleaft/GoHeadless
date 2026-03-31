@@ -107,15 +107,19 @@ func main() {
 	setupHandler.Routes(api)
 	authHandler.PublicRoutes(api)
 
+	// Content routes: AuthorizeCollection handles public access check first,
+	// then authentication if needed. NOT under protected group to allow public access.
+	contentGroup := api.Group("/content/:slug", rbac.AuthorizeCollection)
+	contentHandler.Routes(contentGroup)
+
 	// Protected Routes (Require Authentication)
 	protected := api.Group("", rbac.Authenticate)
 
 	// Collection & Content with RBAC
+	// Collections still require authentication
 	collectionGroup := protected.Group("/collections", rbac.AuthorizeCollection)
-	contentGroup := protected.Group("/content/:slug", rbac.AuthorizeCollection)
-
 	collHandler.Routes(collectionGroup)
-	contentHandler.Routes(contentGroup)
+
 	uploadHandler.Routes(protected.Group("/upload"))
 
 	// Admin-only Routes (Superadmin required)

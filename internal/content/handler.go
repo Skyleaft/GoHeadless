@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"GoHeadless/internal/domain"
+
 	"github.com/gofiber/fiber/v3"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -20,7 +21,9 @@ func NewHandler(service Service) *Handler {
 
 func (h *Handler) Routes(router fiber.Router) {
 	router.Get("/", h.ListRecords)
+	router.Get("", h.ListRecords) // Without trailing slash
 	router.Post("/", h.CreateRecord)
+	router.Post("", h.CreateRecord) // Without trailing slash
 	router.Get("/:id", h.GetRecord)
 	router.Put("/:id", h.UpdateRecord)
 	router.Delete("/:id", h.DeleteRecord)
