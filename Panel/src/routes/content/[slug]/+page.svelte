@@ -1,25 +1,30 @@
 <script lang="ts">
-	import { page } from '$app/state';
-	import { collectionsApi } from '$lib/api/collections';
+	import { goto } from '$app/navigation';
 	import { contentApi } from '$lib/api/content';
 	import { toast } from '$lib/stores/toast';
 	import { auth } from '$lib/stores/auth';
 	import RecordTable from '$lib/features/content/RecordTable.svelte';
 	import Button from '$lib/shared/Button.svelte';
-	import Spinner from '$lib/shared/Spinner.svelte';
-	import type { Collection, ContentRecord } from '$lib/types/collection';
+	import type { PageData } from './$types';
 
-	let slug = $derived(page.params.slug as string);
-	let collection = $state<Collection | null>(null);
-	let records = $state<ContentRecord[]>([]);
-	let loading = $state(true);
+	let { data }: { data: PageData } = $props();
+
+	let slug = $derived(data.slug);
+	let collection = $derived(data.collection);
+
+	// Create a reactive state that updates when the data prop changes
+	let records = $state(data.records);
+	$effect(() => {
+		records = data.records;
+	});
+
 	let permissions = $derived(() => {
 		if (!$auth.user) return { create: false, read: false, update: false, delete: false };
 		if ($auth.user.is_initial_admin)
 			return { create: true, read: true, update: true, delete: true };
 
 		const access = collection?.access;
-		if (!access) return { create: true, read: true, update: true, delete: true }; // Default to open if no policy
+		if (!access) return { create: true, read: true, update: true, delete: true };
 
 		const roleId = $auth.user.role_id;
 		const check = (action: 'create' | 'read' | 'update' | 'delete') => {
@@ -35,28 +40,18 @@
 		};
 	});
 
-	$effect(() => {
-		loading = true;
-		Promise.all([collectionsApi.get(slug), contentApi.list(slug)])
-			.then(([coll, recs]) => {
-				collection = coll;
-				records = recs ?? [];
-				loading = false;
-			})
-			.catch((err) => {
-				toast.error(err.message ?? 'Failed to load data');
-				loading = false;
-			});
-	});
-
 	async function handleDelete(id: string) {
 		try {
 			await contentApi.delete(slug, id);
-			records = records.filter((r) => (r._id ?? r.id) !== id);
+			records = records.filter((r: any) => (r._id ?? r.id) !== id);
 			toast.success('Record deleted');
 		} catch (err: any) {
 			toast.error(err.message ?? 'Failed to delete record');
 		}
+	}
+
+	function handleNew() {
+		goto(`/content/${slug}/new`);
 	}
 </script>
 
@@ -64,9 +59,7 @@
 	<title>{collection?.name ?? slug} Content — GoHeadless CMS</title>
 </svelte:head>
 
-{#if loading}
-	<div class="py-24 flex justify-center"><Spinner /></div>
-{:else if collection}
+{#if collection}
 	<div class="gap-6 animate-fade-in flex flex-col">
 		<!-- Header -->
 		<div class="gap-4 flex items-start justify-between">
@@ -89,9 +82,7 @@
 				</div>
 			</div>
 			{#if permissions().create}
-				<Button variant="primary" onclick={() => (window.location.href = `/content/${slug}/new`)}>
-					+ New Record
-				</Button>
+				<Button variant="primary" onclick={handleNew}>+ New Record</Button>
 			{/if}
 		</div>
 

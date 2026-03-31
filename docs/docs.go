@@ -636,6 +636,20 @@ const docTemplate = `{
                 }
             }
         },
+        "domain.ArrayConfig": {
+            "type": "object",
+            "properties": {
+                "max_items": {
+                    "type": "integer"
+                },
+                "min_items": {
+                    "type": "integer"
+                },
+                "unique_items": {
+                    "type": "boolean"
+                }
+            }
+        },
         "domain.CRUDPolicy": {
             "type": "object",
             "properties": {
@@ -720,6 +734,9 @@ const docTemplate = `{
                 "type"
             ],
             "properties": {
+                "array_config": {
+                    "$ref": "#/definitions/domain.ArrayConfig"
+                },
                 "computed_by": {
                     "type": "string"
                 },
@@ -732,6 +749,10 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/domain.Field"
                     }
+                },
+                "is_array": {
+                    "description": "Array Configuration",
+                    "type": "boolean"
                 },
                 "key": {
                     "type": "string"

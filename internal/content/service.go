@@ -77,113 +77,158 @@ func (s *service) validateFields(fields []domain.Field, record domain.Record) er
 		}
 
 		// Basic type validation
-		switch field.Type {
-		case domain.TypeTextInput, domain.TypeTextArea, domain.TypeEmailInput, domain.TypePasswordInput, domain.TypePhoneInput, domain.TypeURLInput, domain.TypeColorPickerField:
-			if _, ok := val.(string); !ok {
-				return fmt.Errorf("field %s must be a string", field.Key)
-			}
-			// String length validation
-			if field.Validation != nil {
-				str := val.(string)
-				if field.Validation.MinLength != nil && len(str) < *field.Validation.MinLength {
-					return fmt.Errorf("field %s must have at least %d characters", field.Key, *field.Validation.MinLength)
+		validateSingleValue := func(fieldType domain.FieldType, fieldVal interface{}) error {
+			switch fieldType {
+			case domain.TypeTextInput, domain.TypeTextArea, domain.TypeEmailInput, domain.TypePasswordInput, domain.TypePhoneInput, domain.TypeURLInput, domain.TypeColorPickerField:
+				if _, ok := fieldVal.(string); !ok {
+					return fmt.Errorf("field %s must be a string", field.Key)
 				}
-				if field.Validation.MaxLength != nil && len(str) > *field.Validation.MaxLength {
-					return fmt.Errorf("field %s must have at most %d characters", field.Key, *field.Validation.MaxLength)
-				}
-				if field.Validation.Regex != "" {
-					matched, err := regexp.MatchString(field.Validation.Regex, str)
-					if err != nil {
-						return fmt.Errorf("invalid regex in field %s: %w", field.Key, err)
+				// String length validation
+				if field.Validation != nil {
+					str := fieldVal.(string)
+					if field.Validation.MinLength != nil && len(str) < *field.Validation.MinLength {
+						return fmt.Errorf("field %s must have at least %d characters", field.Key, *field.Validation.MinLength)
 					}
-					if !matched {
-						return fmt.Errorf("field %s does not match required pattern", field.Key)
+					if field.Validation.MaxLength != nil && len(str) > *field.Validation.MaxLength {
+						return fmt.Errorf("field %s must have at most %d characters", field.Key, *field.Validation.MaxLength)
+					}
+					if field.Validation.Regex != "" {
+						matched, err := regexp.MatchString(field.Validation.Regex, str)
+						if err != nil {
+							return fmt.Errorf("invalid regex in field %s: %w", field.Key, err)
+						}
+						if !matched {
+							return fmt.Errorf("field %s does not match required pattern", field.Key)
+						}
 					}
 				}
-			}
 
-		case domain.TypeNumberInput, domain.TypeSliderField, domain.TypeRatingField:
-			var num float64
-			switch v := val.(type) {
-			case float64:
-				num = v
-			case int:
-				num = float64(v)
-			case int64:
-				num = float64(v)
-			default:
-				return fmt.Errorf("field %s must be a number", field.Key)
-			}
-
-			if field.Validation != nil {
-				if field.Validation.Min != nil && num < *field.Validation.Min {
-					return fmt.Errorf("field %s must be at least %v", field.Key, *field.Validation.Min)
+			case domain.TypeNumberInput, domain.TypeSliderField, domain.TypeRatingField:
+				var num float64
+				switch v := fieldVal.(type) {
+				case float64:
+					num = v
+				case int:
+					num = float64(v)
+				case int64:
+					num = float64(v)
+				default:
+					return fmt.Errorf("field %s must be a number", field.Key)
 				}
-				if field.Validation.Max != nil && num > *field.Validation.Max {
-					return fmt.Errorf("field %s must be at most %v", field.Key, *field.Validation.Max)
-				}
-			}
 
-		case domain.TypeBool, domain.TypeToggleField:
-			if _, ok := val.(bool); !ok {
-				return fmt.Errorf("field %s must be a boolean", field.Key)
-			}
-
-		case domain.TypeImageUpload, domain.TypeFileUpload:
-			// Check for multiple files if applicable
-			isMultiple := false
-			if field.Props != nil {
-				if m, ok := field.Props["multiple"].(bool); ok {
-					isMultiple = m
+				if field.Validation != nil {
+					if field.Validation.Min != nil && num < *field.Validation.Min {
+						return fmt.Errorf("field %s must be at least %v", field.Key, *field.Validation.Min)
+					}
+					if field.Validation.Max != nil && num > *field.Validation.Max {
+						return fmt.Errorf("field %s must be at most %v", field.Key, *field.Validation.Max)
+					}
 				}
-			}
 
-			if isMultiple {
-				if _, ok := val.([]interface{}); !ok {
-					return fmt.Errorf("field %s must be an array of files", field.Key)
+			case domain.TypeBool, domain.TypeToggleField:
+				if _, ok := fieldVal.(bool); !ok {
+					return fmt.Errorf("field %s must be a boolean", field.Key)
 				}
-			} else {
-				if _, ok := val.(string); !ok {
+
+			case domain.TypeImageUpload, domain.TypeFileUpload:
+				if _, ok := fieldVal.(string); !ok {
 					return fmt.Errorf("field %s must be a string (file path)", field.Key)
 				}
-			}
 
-		case domain.TypeDatePicker, domain.TypeTimePicker, domain.TypeDateTimePicker:
-			if strVal, ok := val.(string); ok {
-				t, err := time.Parse(time.RFC3339, strVal)
-				if err != nil {
-					return fmt.Errorf("field %s must be valid RFC3339 datetime string", field.Key)
+			case domain.TypeDatePicker, domain.TypeTimePicker, domain.TypeDateTimePicker:
+				if strVal, ok := fieldVal.(string); ok {
+					_, err := time.Parse(time.RFC3339, strVal)
+					if err != nil {
+						return fmt.Errorf("field %s must be valid RFC3339 datetime string", field.Key)
+					}
+				} else if _, ok := fieldVal.(primitive.DateTime); !ok {
+					return fmt.Errorf("field %s has invalid datetime type %v", field.Key, reflect.TypeOf(fieldVal))
 				}
-				record[field.Key] = primitive.NewDateTimeFromTime(t)
-			} else if dt, ok := val.(primitive.DateTime); ok {
-				record[field.Key] = dt
-			} else {
-				return fmt.Errorf("field %s has invalid datetime type %v", field.Key, reflect.TypeOf(val))
-			}
 
-		case domain.TypeSelect, domain.TypeRadio:
-			// Could validate against options
-			if _, ok := val.(string); !ok {
-				if _, ok := val.(float64); !ok {
-					return fmt.Errorf("field %s must be a string or number", field.Key)
+			case domain.TypeSelect, domain.TypeRadio:
+				if _, ok := fieldVal.(string); !ok {
+					if _, ok := fieldVal.(float64); !ok {
+						return fmt.Errorf("field %s must be a string or number", field.Key)
+					}
+				}
+			case domain.TypeRelation, domain.TypeAutocomplete:
+				if strVal, ok := fieldVal.(string); ok {
+					if _, err := primitive.ObjectIDFromHex(strVal); err != nil {
+						return fmt.Errorf("field %s must be a valid ObjectID hex string", field.Key)
+					}
+				} else if _, ok := fieldVal.(primitive.ObjectID); !ok {
+					return fmt.Errorf("field %s must be an ObjectID", field.Key)
 				}
 			}
-		case domain.TypeMultiSelect, domain.TypeCheckbox:
-			// These usually hold arrays of strings
-			if _, ok := val.([]interface{}); !ok {
+			return nil
+		}
+
+		// List / Array Logic
+		if field.IsArray {
+			items, ok := val.([]interface{})
+			if !ok {
 				return fmt.Errorf("field %s must be an array", field.Key)
 			}
-		case domain.TypeRelation, domain.TypeAutocomplete:
-			// Usually stores ObjectID, if hex string provided convert it
-			if strVal, ok := val.(string); ok {
-				id, err := primitive.ObjectIDFromHex(strVal)
-				if err == nil {
-					record[field.Key] = id
-				} else {
-					return fmt.Errorf("field %s must be a valid ObjectID hex string", field.Key)
+
+			// Validate constraints
+			if field.ArrayConfig != nil {
+				if field.ArrayConfig.MinItems != nil && len(items) < *field.ArrayConfig.MinItems {
+					return fmt.Errorf("field %s must have at least %d items", field.Key, *field.ArrayConfig.MinItems)
 				}
-			} else if _, ok := val.(primitive.ObjectID); !ok {
-				return fmt.Errorf("field %s must be an ObjectID", field.Key)
+				if field.ArrayConfig.MaxItems != nil && len(items) > *field.ArrayConfig.MaxItems {
+					return fmt.Errorf("field %s must have at most %d items", field.Key, *field.ArrayConfig.MaxItems)
+				}
+				if field.ArrayConfig.UniqueItems {
+					seen := make(map[interface{}]bool)
+					for _, item := range items {
+						if seen[item] {
+							return fmt.Errorf("field %s must have unique items", field.Key)
+						}
+						seen[item] = true
+					}
+				}
+			}
+
+			// Validate each item
+			for i, item := range items {
+				if err := validateSingleValue(field.Type, item); err != nil {
+					return fmt.Errorf("error in %s at index %d: %w", field.Key, i, err)
+				}
+				// Potential post-processing (e.g. ObjectID/Date conversion)
+				if field.Type == domain.TypeRelation || field.Type == domain.TypeAutocomplete {
+					if strVal, ok := item.(string); ok {
+						if id, err := primitive.ObjectIDFromHex(strVal); err == nil {
+							items[i] = id
+						}
+					}
+				} else if field.Type == domain.TypeDatePicker || field.Type == domain.TypeTimePicker || field.Type == domain.TypeDateTimePicker {
+					if strVal, ok := item.(string); ok {
+						if t, err := time.Parse(time.RFC3339, strVal); err == nil {
+							items[i] = primitive.NewDateTimeFromTime(t)
+						}
+					}
+				}
+			}
+			record[field.Key] = items
+		} else {
+			// Single value validation
+			if err := validateSingleValue(field.Type, val); err != nil {
+				return err
+			}
+
+			// Single value Post-processing
+			if field.Type == domain.TypeRelation || field.Type == domain.TypeAutocomplete {
+				if strVal, ok := val.(string); ok {
+					if id, err := primitive.ObjectIDFromHex(strVal); err == nil {
+						record[field.Key] = id
+					}
+				}
+			} else if field.Type == domain.TypeDatePicker || field.Type == domain.TypeTimePicker || field.Type == domain.TypeDateTimePicker {
+				if strVal, ok := val.(string); ok {
+					if t, err := time.Parse(time.RFC3339, strVal); err == nil {
+						record[field.Key] = primitive.NewDateTimeFromTime(t)
+					}
+				}
 			}
 		}
 	}

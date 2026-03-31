@@ -5,6 +5,7 @@
 		loading?: boolean;
 		disabled?: boolean;
 		type?: 'button' | 'submit' | 'reset';
+		href?: string;
 		onclick?: (e: MouseEvent) => void;
 		class?: string;
 		children: import('svelte').Snippet;
@@ -16,6 +17,7 @@
 		loading = false,
 		disabled = false,
 		type = 'button',
+		href,
 		onclick,
 		class: cls = '',
 		children
@@ -42,18 +44,28 @@
 	};
 </script>
 
-<button
-	{type}
-	class="{base} {sizes[size]} {variants[variant]} {cls}"
-	disabled={disabled || loading}
-	{onclick}
->
-	{#if loading}
-		<span class="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
-		></span>
-	{/if}
-	{@render children()}
-</button>
+{#if href}
+	<a
+		{href}
+		class="{base} {sizes[size]} {variants[variant]} {cls}"
+		{onclick}
+	>
+		{@render children()}
+	</a>
+{:else}
+	<button
+		{type}
+		class="{base} {sizes[size]} {variants[variant]} {cls}"
+		disabled={disabled || loading}
+		{onclick}
+	>
+		{#if loading}
+			<span class="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
+			></span>
+		{/if}
+		{@render children()}
+	</button>
+{/if}
 
 <style>
 	@keyframes spin {

@@ -6,6 +6,7 @@
 	import Button from '$lib/shared/Button.svelte';
 	import EmptyState from '$lib/shared/EmptyState.svelte';
 	import ConfirmDialog from '$lib/shared/ConfirmDialog.svelte';
+	import { getFileUrl } from '$lib/utils/path';
 
 	interface Props {
 		fields: Field[];
@@ -65,29 +66,38 @@
 		{#snippet children()}
 			<a
 				href="/content/{collectionSlug}/new"
-				class="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-white transition-all hover:opacity-90"
-				style="background: var(--brand)"
-			>+ New Record</a>
+				class="gap-2 rounded-lg px-4 py-2 text-sm font-medium text-white inline-flex items-center transition-all hover:opacity-90"
+				style="background: var(--brand)">+ New Record</a
+			>
 		{/snippet}
 	</EmptyState>
 {:else}
 	<div class="card overflow-hidden">
 		<div class="overflow-x-auto">
-			<table class="w-full text-sm">
+			<table class="text-sm w-full">
 				<thead>
 					<tr style="border-bottom: 1px solid var(--border); background: var(--surface-alt)">
-						<th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide" style="color: var(--text-muted)">
+						<th
+							class="px-4 py-3 text-xs font-semibold tracking-wide text-left uppercase"
+							style="color: var(--text-muted)"
+						>
 							ID
 						</th>
 						{#each displayFields as field}
-							<th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide whitespace-nowrap" style="color: var(--text-muted)">
-								<div class="flex items-center gap-2">
+							<th
+								class="px-4 py-3 text-xs font-semibold tracking-wide text-left whitespace-nowrap uppercase"
+								style="color: var(--text-muted)"
+							>
+								<div class="gap-2 flex items-center">
 									{field.label || field.key}
 									<Badge type={field.type} />
 								</div>
 							</th>
 						{/each}
-						<th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide" style="color: var(--text-muted)">
+						<th
+							class="px-4 py-3 text-xs font-semibold tracking-wide text-right uppercase"
+							style="color: var(--text-muted)"
+						>
 							Actions
 						</th>
 					</tr>
@@ -96,17 +106,20 @@
 					{#each records as record}
 						{@const id = getRecordId(record)}
 						<tr
-							class="transition-colors border-b last:border-0"
+							class="border-b transition-colors last:border-0"
 							style="border-color: var(--border)"
-							onmouseenter={(e) => (e.currentTarget as HTMLElement).style.background = 'var(--surface-alt)'}
-							onmouseleave={(e) => (e.currentTarget as HTMLElement).style.background = 'transparent'}
+							onmouseenter={(e) =>
+								((e.currentTarget as HTMLElement).style.background = 'var(--surface-alt)')}
+							onmouseleave={(e) =>
+								((e.currentTarget as HTMLElement).style.background = 'transparent')}
 						>
 							<!-- ID -->
 							<td class="px-4 py-3">
 								<code
 									class="rounded px-1.5 py-0.5 text-xs font-mono"
 									style="background: var(--surface-alt); color: var(--text-muted)"
-								>{id.slice(-8)}</code>
+									>{id.slice(-8)}</code
+								>
 							</td>
 
 							<!-- Fields -->
@@ -114,7 +127,7 @@
 								<td class="px-4 py-3 max-w-xs" style="color: var(--text-primary)">
 									{#if field.type === 'image' && record[field.key]}
 										<img
-											src="/uploads{record[field.key]}"
+											src={getFileUrl(record[field.key] as string)}
 											alt={field.label}
 											class="h-8 w-8 rounded object-cover"
 										/>
@@ -130,20 +143,20 @@
 
 							<!-- Actions -->
 							<td class="px-4 py-3 text-right">
-								<div class="flex items-center justify-end gap-2">
+								<div class="gap-2 flex items-center justify-end">
 									{#if canUpdate}
 										<a
 											href="/content/{collectionSlug}/{id}"
-											class="inline-flex h-7 items-center gap-1 rounded-lg px-2.5 text-xs font-medium transition hover:bg-[--surface-hover]"
-											style="color: var(--brand)"
-										>Edit</a>
+											class="h-7 gap-1 rounded-lg px-2.5 text-xs font-medium inline-flex items-center transition hover:bg-[--surface-hover]"
+											style="color: var(--brand)">Edit</a
+										>
 									{/if}
 									{#if canDelete}
 										<button
 											onclick={() => (deleteTarget = id)}
-											class="flex h-7 w-7 items-center justify-center rounded-lg text-red-400 transition hover:bg-red-50 hover:text-red-600"
-											title="Delete record"
-										>🗑</button>
+											class="h-7 w-7 rounded-lg text-red-400 hover:bg-red-50 hover:text-red-600 flex items-center justify-center transition"
+											title="Delete record">🗑</button
+										>
 									{/if}
 									{#if !canUpdate && !canDelete}
 										<span class="text-xs text-[--text-muted]">Read only</span>
@@ -158,7 +171,7 @@
 
 		<!-- Footer -->
 		<div
-			class="flex items-center justify-between px-4 py-3 border-t text-xs"
+			class="px-4 py-3 text-xs flex items-center justify-between border-t"
 			style="border-color: var(--border); color: var(--text-muted); background: var(--surface-alt)"
 		>
 			<span>{records.length} record{records.length !== 1 ? 's' : ''} total</span>

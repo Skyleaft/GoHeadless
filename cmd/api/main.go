@@ -116,7 +116,7 @@ func main() {
 
 	collHandler.Routes(collectionGroup)
 	contentHandler.Routes(contentGroup)
-	uploadHandler.Routes(protected)
+	uploadHandler.Routes(protected.Group("/upload"))
 
 	// Admin-only Routes (Superadmin required)
 	adminGroup := protected.Group("", rbac.RequireSuperadmin)

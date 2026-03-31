@@ -65,6 +65,12 @@ type ValidationRules struct {
 	Regex     string   `bson:"regex,omitempty" json:"regex,omitempty"`
 }
 
+type ArrayConfig struct {
+	MinItems    *int `bson:"min_items,omitempty" json:"min_items,omitempty"`
+	MaxItems    *int `bson:"max_items,omitempty" json:"max_items,omitempty"`
+	UniqueItems bool `bson:"unique_items" json:"unique_items"`
+}
+
 type ConditionalLogic struct {
 	ShowIf *Condition `bson:"show_if,omitempty" json:"show_if,omitempty"`
 }
@@ -101,6 +107,10 @@ type Field struct {
 	// Relational & Advanced Logic
 	Relation   *RelationConfig `bson:"relation,omitempty" json:"relation,omitempty"`
 	ComputedBy string          `bson:"computed_by,omitempty" json:"computed_by,omitempty"`
+
+	// Array Configuration
+	IsArray     bool         `bson:"is_array" json:"is_array"`
+	ArrayConfig *ArrayConfig `bson:"array_config,omitempty" json:"array_config,omitempty"`
 
 	// Additional dynamic properties for specific components
 	Props map[string]interface{} `bson:"props,omitempty" json:"props,omitempty"`

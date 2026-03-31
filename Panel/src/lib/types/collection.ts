@@ -52,6 +52,12 @@ export interface ValidationRules {
 	regex?: string;
 }
 
+export interface ArrayConfig {
+	min_items?: number;
+	max_items?: number;
+	unique_items: boolean;
+}
+
 export interface Condition {
 	field: string;
 	equals: unknown;
@@ -86,6 +92,11 @@ export interface Field {
 	fields?: Field[]; // recursive: group / repeater sub-fields
 	relation?: RelationConfig;
 	computed_by?: string;
+
+	// Array Configuration
+	is_array: boolean;
+	array_config?: ArrayConfig;
+
 	props?: Record<string, unknown>;
 }
 

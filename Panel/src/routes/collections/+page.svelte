@@ -37,7 +37,7 @@
 				{collections.length} collection{collections.length !== 1 ? 's' : ''} defined
 			</p>
 		</div>
-		<Button variant="primary" onclick={() => (window.location.href = '/collections/new')}>
+		<Button variant="primary" href="/collections/new">
 			+ New Collection
 		</Button>
 	</div>

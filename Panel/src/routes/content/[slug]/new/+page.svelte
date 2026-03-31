@@ -1,33 +1,20 @@
 <script lang="ts">
-	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
-	import { collectionsApi } from '$lib/api/collections';
 	import { contentApi } from '$lib/api/content';
 	import { toast } from '$lib/stores/toast';
 	import RecordForm from '$lib/features/content/RecordForm.svelte';
-	import Spinner from '$lib/shared/Spinner.svelte';
-	import type { Collection } from '$lib/types/collection';
+	import type { PageData } from './$types';
 
-	let slug = $derived(page.params.slug as string);
-	let collection = $state<Collection | null>(null);
-	let loading = $state(true);
+	let { data }: { data: PageData } = $props();
+
+	let slug = $derived(data.slug);
+	let collection = $derived(data.collection);
 	let saving = $state(false);
 
-	$effect(() => {
-		loading = true;
-		collectionsApi.get(slug).then((c) => {
-			collection = c;
-			loading = false;
-		}).catch((err) => {
-			toast.error(err.message ?? 'Failed to load collection');
-			loading = false;
-		});
-	});
-
-	async function handleSubmit(data: Record<string, unknown>) {
+	async function handleSubmit(formData: Record<string, unknown>) {
 		saving = true;
 		try {
-			const result = await contentApi.create(slug, data);
+			await contentApi.create(slug, formData);
 			toast.success('Record created successfully!');
 			goto(`/content/${slug}`);
 		} catch (err: any) {
@@ -42,13 +29,15 @@
 	<title>New Record — {collection?.name ?? slug} — GoHeadless CMS</title>
 </svelte:head>
 
-{#if loading}
-	<div class="flex justify-center py-24"><Spinner /></div>
-{:else if collection}
-	<div class="flex flex-col gap-6 animate-fade-in max-w-2xl">
+{#if collection}
+	<div class="gap-6 animate-fade-in max-w-2xl flex flex-col">
 		<div>
-			<div class="flex items-center gap-2 text-sm mb-2">
-				<a href="/content/{slug}" class="transition hover:text-[--brand]" style="color: var(--text-muted)">
+			<div class="gap-2 text-sm mb-2 flex items-center">
+				<a
+					href="/content/{slug}"
+					class="transition hover:text-[--brand]"
+					style="color: var(--text-muted)"
+				>
 					← {collection.name}
 				</a>
 			</div>

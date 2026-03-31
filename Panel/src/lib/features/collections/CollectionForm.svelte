@@ -36,7 +36,18 @@
 	});
 
 	function addField() {
-		fields = [...fields, { key: '', label: '', type: 'text', required: false, unique: false }];
+		fields = [
+			...fields,
+			{
+				key: '',
+				label: '',
+				type: 'text',
+				required: false,
+				unique: false,
+				is_array: false,
+				array_config: { unique_items: false }
+			}
+		];
 	}
 
 	function removeField(i: number) {

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { uploadApi } from '$lib/api/upload';
+	import { getFileUrl } from '$lib/utils/path';
 
 	interface Props {
 		value?: string; // stored file path
@@ -19,9 +20,7 @@
 		uploading = true;
 		error = '';
 		try {
-			const res = value
-				? await uploadApi.replace(value, file)
-				: await uploadApi.upload(file);
+			const res = value ? await uploadApi.replace(value, file) : await uploadApi.upload(file);
 			value = res.path;
 			onchange?.(res.path);
 		} catch (err: any) {
@@ -54,39 +53,41 @@
 		}
 	}
 
-	let previewSrc = $derived(value ? `/uploads${value}` : '');
+	let previewSrc = $derived(value ? getFileUrl(value) : '');
 </script>
 
-<div class="flex flex-col gap-2">
+<div class="gap-2 flex flex-col">
 	{#if value && isImage}
 		<!-- Image preview -->
 		<div class="relative inline-flex">
 			<img
 				src={previewSrc}
 				alt="Preview"
-				class="h-32 w-32 rounded-xl object-cover border"
+				class="h-32 w-32 rounded-xl border object-cover"
 				style="border-color: var(--border)"
 			/>
 			<button
 				type="button"
 				onclick={remove}
-				class="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white text-xs shadow-md hover:bg-red-600 transition"
-				title="Remove file"
-			>✕</button>
+				class="-right-2 -top-2 h-6 w-6 bg-red-500 text-white text-xs shadow-md hover:bg-red-600 absolute flex items-center justify-center rounded-full transition"
+				title="Remove file">✕</button
+			>
 		</div>
 	{:else if value}
 		<!-- File path -->
 		<div
-			class="flex items-center gap-3 rounded-lg border px-3 py-2"
+			class="gap-3 rounded-lg px-3 py-2 flex items-center border"
 			style="background: var(--surface-alt); border-color: var(--border)"
 		>
 			<span class="text-xl">📄</span>
-			<span class="flex-1 truncate text-sm font-mono" style="color: var(--text-primary)">{value}</span>
+			<span class="text-sm font-mono flex-1 truncate" style="color: var(--text-primary)"
+				>{value}</span
+			>
 			<button
 				type="button"
 				onclick={remove}
-				class="text-red-400 hover:text-red-600 transition text-sm"
-			>✕</button>
+				class="text-red-400 hover:text-red-600 text-sm transition">✕</button
+			>
 		</div>
 	{/if}
 
@@ -95,10 +96,13 @@
 		<button
 			type="button"
 			onclick={() => input.click()}
-			ondragover={(e) => { e.preventDefault(); dragover = true; }}
+			ondragover={(e) => {
+				e.preventDefault();
+				dragover = true;
+			}}
 			ondragleave={() => (dragover = false)}
 			ondrop={handleDrop}
-			class="flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed px-6 py-8 text-center transition-all"
+			class="gap-3 rounded-xl px-6 py-8 flex flex-col items-center justify-center border-2 border-dashed text-center transition-all"
 			style="
 				border-color: {dragover ? 'var(--brand)' : 'var(--border)'};
 				background: {dragover ? 'var(--brand-light)' : 'var(--surface-alt)'};
@@ -128,8 +132,8 @@
 			type="button"
 			onclick={() => input.click()}
 			class="text-sm transition hover:text-[--brand]"
-			style="color: var(--text-muted)"
-		>Replace file</button>
+			style="color: var(--text-muted)">Replace file</button
+		>
 	{/if}
 
 	<input
@@ -147,5 +151,9 @@
 </div>
 
 <style>
-	@keyframes spin { to { transform: rotate(360deg); } }
+	@keyframes spin {
+		to {
+			transform: rotate(360deg);
+		}
+	}
 </style>

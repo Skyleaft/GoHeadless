@@ -28,6 +28,15 @@ definitions:
       is_public:
         type: boolean
     type: object
+  domain.ArrayConfig:
+    properties:
+      max_items:
+        type: integer
+      min_items:
+        type: integer
+      unique_items:
+        type: boolean
+    type: object
   domain.CRUDPolicy:
     properties:
       create:
@@ -81,6 +90,8 @@ definitions:
     type: object
   domain.Field:
     properties:
+      array_config:
+        $ref: '#/definitions/domain.ArrayConfig'
       computed_by:
         type: string
       default_value: {}
@@ -90,6 +101,9 @@ definitions:
         items:
           $ref: '#/definitions/domain.Field'
         type: array
+      is_array:
+        description: Array Configuration
+        type: boolean
       key:
         type: string
       label:
