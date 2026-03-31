@@ -306,28 +306,83 @@
                 }
             }
         },
-        "/upload/image": {
-            "post": {
-                "description": "Handles image file upload, converts it to WebP format, and saves it to the server's local storage.",
+        "/upload": {
+            "put": {
+                "description": "Deletes the old file and replaces it with a new one.",
                 "consumes": [
                     "multipart/form-data"
                 ],
                 "tags": [
                     "Upload"
                 ],
-                "summary": "Upload and convert image to webp",
+                "summary": "Replace an uploaded file",
                 "parameters": [
                     {
+                        "type": "string",
+                        "description": "The path of the file to replace",
+                        "name": "oldPath",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
                         "type": "file",
-                        "description": "The image to upload",
-                        "name": "image",
+                        "description": "The new file",
+                        "name": "file",
                         "in": "formData",
                         "required": true
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Returns the image path",
+                        "description": "Returns the new file path",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server error during processing",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Handles file upload, converts images to WebP if applicable, and saves it to the server's local storage.",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "tags": [
+                    "Upload"
+                ],
+                "summary": "Upload a file",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "The file to upload",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Returns the file path",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -345,7 +400,52 @@
                         }
                     },
                     "500": {
-                        "description": "Server error during image processing",
+                        "description": "Server error during processing",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Deletes a file from the server's local storage based on its path.",
+                "tags": [
+                    "Upload"
+                ],
+                "summary": "Delete an uploaded file",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The path of the file to delete (e.g. /uploads/file_name.ext)",
+                        "name": "path",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Returns success message",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid path or file not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server error during file deletion",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -386,60 +486,233 @@
                 }
             }
         },
+        "domain.Condition": {
+            "type": "object",
+            "properties": {
+                "equals": {},
+                "field": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.ConditionalLogic": {
+            "type": "object",
+            "properties": {
+                "show_if": {
+                    "$ref": "#/definitions/domain.Condition"
+                }
+            }
+        },
         "domain.Field": {
             "type": "object",
             "required": [
-                "name",
+                "key",
                 "type"
             ],
             "properties": {
+                "computed_by": {
+                    "type": "string"
+                },
+                "default_value": {},
                 "description": {
                     "type": "string"
                 },
-                "name": {
+                "fields": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/domain.Field"
+                    }
+                },
+                "key": {
                     "type": "string"
+                },
+                "label": {
+                    "type": "string"
+                },
+                "logic": {
+                    "$ref": "#/definitions/domain.ConditionalLogic"
+                },
+                "options": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/domain.Option"
+                    }
+                },
+                "placeholder": {
+                    "type": "string"
+                },
+                "props": {
+                    "description": "Additional dynamic properties for specific components",
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "relation": {
+                    "description": "Relational \u0026 Advanced Logic",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/domain.RelationConfig"
+                        }
+                    ]
                 },
                 "required": {
                     "type": "boolean"
                 },
                 "type": {
-                    "enum": [
-                        "String",
-                        "Number",
-                        "Float",
-                        "DateTime",
-                        "Bool",
-                        "Image"
-                    ],
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/domain.FieldType"
-                        }
-                    ]
+                    "$ref": "#/definitions/domain.FieldType"
                 },
                 "unique": {
                     "type": "boolean"
+                },
+                "validation": {
+                    "$ref": "#/definitions/domain.ValidationRules"
                 }
             }
         },
         "domain.FieldType": {
             "type": "string",
             "enum": [
-                "String",
-                "Number",
-                "Float",
-                "DateTime",
-                "Bool",
-                "Image"
+                "text",
+                "textarea",
+                "number",
+                "email",
+                "password",
+                "phone",
+                "url",
+                "select",
+                "radio",
+                "checkbox",
+                "multiselect",
+                "datepicker",
+                "timepicker",
+                "datetimepicker",
+                "file",
+                "image",
+                "bool",
+                "toggle",
+                "slider",
+                "rating",
+                "colorpicker",
+                "section",
+                "group",
+                "tabs",
+                "grid",
+                "repeater",
+                "relation",
+                "autocomplete",
+                "submit",
+                "reset",
+                "action"
+            ],
+            "x-enum-comments": {
+                "TypeBool": "Simple boolean"
+            },
+            "x-enum-descriptions": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "Simple boolean",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
             ],
             "x-enum-varnames": [
-                "TypeString",
-                "TypeNumber",
-                "TypeFloat",
-                "TypeDateTime",
+                "TypeTextInput",
+                "TypeTextArea",
+                "TypeNumberInput",
+                "TypeEmailInput",
+                "TypePasswordInput",
+                "TypePhoneInput",
+                "TypeURLInput",
+                "TypeSelect",
+                "TypeRadio",
+                "TypeCheckbox",
+                "TypeMultiSelect",
+                "TypeDatePicker",
+                "TypeTimePicker",
+                "TypeDateTimePicker",
+                "TypeFileUpload",
+                "TypeImageUpload",
                 "TypeBool",
-                "TypeImage"
+                "TypeToggleField",
+                "TypeSliderField",
+                "TypeRatingField",
+                "TypeColorPickerField",
+                "TypeSection",
+                "TypeFieldGroup",
+                "TypeTabs",
+                "TypeGrid",
+                "TypeRepeater",
+                "TypeRelation",
+                "TypeAutocomplete",
+                "TypeSubmitButton",
+                "TypeResetButton",
+                "TypeCustomAction"
             ]
+        },
+        "domain.Option": {
+            "type": "object",
+            "properties": {
+                "label": {
+                    "type": "string"
+                },
+                "value": {}
+            }
+        },
+        "domain.RelationConfig": {
+            "type": "object",
+            "properties": {
+                "collection": {
+                    "type": "string"
+                },
+                "field": {
+                    "description": "UI display field",
+                    "type": "string"
+                }
+            }
+        },
+        "domain.ValidationRules": {
+            "type": "object",
+            "properties": {
+                "max": {
+                    "type": "number"
+                },
+                "max_length": {
+                    "type": "integer"
+                },
+                "min": {
+                    "type": "number"
+                },
+                "min_length": {
+                    "type": "integer"
+                },
+                "regex": {
+                    "type": "string"
+                }
+            }
         }
     }
 }

@@ -19,46 +19,187 @@ definitions:
     - name
     - slug
     type: object
+  domain.Condition:
+    properties:
+      equals: {}
+      field:
+        type: string
+    type: object
+  domain.ConditionalLogic:
+    properties:
+      show_if:
+        $ref: '#/definitions/domain.Condition'
+    type: object
   domain.Field:
     properties:
+      computed_by:
+        type: string
+      default_value: {}
       description:
         type: string
-      name:
+      fields:
+        items:
+          $ref: '#/definitions/domain.Field'
+        type: array
+      key:
         type: string
+      label:
+        type: string
+      logic:
+        $ref: '#/definitions/domain.ConditionalLogic'
+      options:
+        items:
+          $ref: '#/definitions/domain.Option'
+        type: array
+      placeholder:
+        type: string
+      props:
+        additionalProperties: true
+        description: Additional dynamic properties for specific components
+        type: object
+      relation:
+        allOf:
+        - $ref: '#/definitions/domain.RelationConfig'
+        description: Relational & Advanced Logic
       required:
         type: boolean
       type:
-        allOf:
-        - $ref: '#/definitions/domain.FieldType'
-        enum:
-        - String
-        - Number
-        - Float
-        - DateTime
-        - Bool
-        - Image
+        $ref: '#/definitions/domain.FieldType'
       unique:
         type: boolean
+      validation:
+        $ref: '#/definitions/domain.ValidationRules'
     required:
-    - name
+    - key
     - type
     type: object
   domain.FieldType:
     enum:
-    - String
-    - Number
-    - Float
-    - DateTime
-    - Bool
-    - Image
+    - text
+    - textarea
+    - number
+    - email
+    - password
+    - phone
+    - url
+    - select
+    - radio
+    - checkbox
+    - multiselect
+    - datepicker
+    - timepicker
+    - datetimepicker
+    - file
+    - image
+    - bool
+    - toggle
+    - slider
+    - rating
+    - colorpicker
+    - section
+    - group
+    - tabs
+    - grid
+    - repeater
+    - relation
+    - autocomplete
+    - submit
+    - reset
+    - action
     type: string
+    x-enum-comments:
+      TypeBool: Simple boolean
+    x-enum-descriptions:
+    - ""
+    - ""
+    - ""
+    - ""
+    - ""
+    - ""
+    - ""
+    - ""
+    - ""
+    - ""
+    - ""
+    - ""
+    - ""
+    - ""
+    - ""
+    - ""
+    - Simple boolean
+    - ""
+    - ""
+    - ""
+    - ""
+    - ""
+    - ""
+    - ""
+    - ""
+    - ""
+    - ""
+    - ""
+    - ""
+    - ""
+    - ""
     x-enum-varnames:
-    - TypeString
-    - TypeNumber
-    - TypeFloat
-    - TypeDateTime
+    - TypeTextInput
+    - TypeTextArea
+    - TypeNumberInput
+    - TypeEmailInput
+    - TypePasswordInput
+    - TypePhoneInput
+    - TypeURLInput
+    - TypeSelect
+    - TypeRadio
+    - TypeCheckbox
+    - TypeMultiSelect
+    - TypeDatePicker
+    - TypeTimePicker
+    - TypeDateTimePicker
+    - TypeFileUpload
+    - TypeImageUpload
     - TypeBool
-    - TypeImage
+    - TypeToggleField
+    - TypeSliderField
+    - TypeRatingField
+    - TypeColorPickerField
+    - TypeSection
+    - TypeFieldGroup
+    - TypeTabs
+    - TypeGrid
+    - TypeRepeater
+    - TypeRelation
+    - TypeAutocomplete
+    - TypeSubmitButton
+    - TypeResetButton
+    - TypeCustomAction
+  domain.Option:
+    properties:
+      label:
+        type: string
+      value: {}
+    type: object
+  domain.RelationConfig:
+    properties:
+      collection:
+        type: string
+      field:
+        description: UI display field
+        type: string
+    type: object
+  domain.ValidationRules:
+    properties:
+      max:
+        type: number
+      max_length:
+        type: integer
+      min:
+        type: number
+      min_length:
+        type: integer
+      regex:
+        type: string
+    type: object
 host: localhost:3000
 info:
   contact:
@@ -267,21 +408,51 @@ paths:
       summary: Update record by ID
       tags:
       - content
-  /upload/image:
+  /upload:
+    delete:
+      description: Deletes a file from the server's local storage based on its path.
+      parameters:
+      - description: The path of the file to delete (e.g. /uploads/file_name.ext)
+        in: query
+        name: path
+        required: true
+        type: string
+      responses:
+        "200":
+          description: Returns success message
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid path or file not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Server error during file deletion
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete an uploaded file
+      tags:
+      - Upload
     post:
       consumes:
       - multipart/form-data
-      description: Handles image file upload, converts it to WebP format, and saves
-        it to the server's local storage.
+      description: Handles file upload, converts images to WebP if applicable, and
+        saves it to the server's local storage.
       parameters:
-      - description: The image to upload
+      - description: The file to upload
         in: formData
-        name: image
+        name: file
         required: true
         type: file
       responses:
         "200":
-          description: Returns the image path
+          description: Returns the file path
           schema:
             additionalProperties:
               type: string
@@ -293,12 +464,49 @@ paths:
               type: string
             type: object
         "500":
-          description: Server error during image processing
+          description: Server error during processing
           schema:
             additionalProperties:
               type: string
             type: object
-      summary: Upload and convert image to webp
+      summary: Upload a file
+      tags:
+      - Upload
+    put:
+      consumes:
+      - multipart/form-data
+      description: Deletes the old file and replaces it with a new one.
+      parameters:
+      - description: The path of the file to replace
+        in: query
+        name: oldPath
+        required: true
+        type: string
+      - description: The new file
+        in: formData
+        name: file
+        required: true
+        type: file
+      responses:
+        "200":
+          description: Returns the new file path
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Server error during processing
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Replace an uploaded file
       tags:
       - Upload
 swagger: "2.0"
