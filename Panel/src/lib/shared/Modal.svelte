@@ -57,7 +57,7 @@
 <dialog
 	bind:this={dialog}
 	onclick={handleBackdrop}
-	class="modal-dialog m-auto rounded-xl p-0 shadow-2xl border w-full animate-scale-in"
+	class="modal-dialog m-auto rounded-xl p-0 shadow-2xl border w-[calc(100%-2rem)] {sizes[size]} animate-scale-in"
 	style="
 		background: var(--surface);
 		border-color: var(--border);
@@ -84,7 +84,7 @@
 	{/if}
 
 	<!-- Body -->
-	<div class="p-6 {sizes[size]}">
+	<div class="p-6">
 		{@render children()}
 	</div>
 

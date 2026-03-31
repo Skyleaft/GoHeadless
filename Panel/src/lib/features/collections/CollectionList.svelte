@@ -1,7 +1,6 @@
 <script lang="ts">
 	import type { Collection } from '$lib/types/collection';
 	import Badge from '$lib/shared/Badge.svelte';
-	import Button from '$lib/shared/Button.svelte';
 	import ConfirmDialog from '$lib/shared/ConfirmDialog.svelte';
 	import EmptyState from '$lib/shared/EmptyState.svelte';
 
@@ -38,7 +37,7 @@
 		{#snippet children()}
 			<a
 				href="/collections/new"
-				class="gap-2 rounded-lg px-4 py-2 text-sm font-medium text-white inline-flex items-center transition-all hover:opacity-90"
+				class="gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-white hover:-translate-y-0.5 shadow-lg hover:shadow-xl inline-flex items-center shadow-[--brand]/20 transition-all hover:shadow-[--brand]/30"
 				style="background: var(--brand)"
 			>
 				+ New Collection
@@ -46,72 +45,127 @@
 		{/snippet}
 	</EmptyState>
 {:else}
-	<div class="gap-4 sm:grid-cols-2 xl:grid-cols-3 grid grid-cols-1">
+	<div class="gap-6 sm:grid-cols-2 xl:grid-cols-3 grid grid-cols-1">
 		{#each collections as col}
 			<div
-				class="card group gap-4 p-5 relative flex flex-col transition-all hover:border-[--brand]"
+				class="group hover:-translate-y-1 hover:shadow-xl relative flex flex-col overflow-hidden rounded-[1.25rem] border transition-all duration-300"
+				style="background: var(--surface); border-color: var(--border); box-shadow: var(--shadow-sm);"
 			>
-				<!-- Header -->
-				<div class="gap-2 flex items-start justify-between">
-					<div class="gap-1 flex flex-col overflow-hidden">
-						<h3 class="text-base font-semibold truncate" style="color: var(--text-primary)">
+				<!-- Subtle branded glow on hover -->
+				<div
+					class="inset-0 pointer-events-none absolute opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+					style="background: linear-gradient(135deg, var(--brand-light) 0%, transparent 60%);"
+				></div>
+
+				<div class="p-6 relative z-10 flex flex-1 flex-col">
+					<!-- Top row: Icon and Actions -->
+					<div class="mb-5 gap-4 flex items-start justify-between">
+						<div
+							class="h-12 w-12 flex flex-shrink-0 items-center justify-center rounded-[0.85rem] border transition-transform duration-300 group-hover:scale-105"
+							style="background: var(--surface-alt); border-color: var(--border); color: var(--brand)"
+						>
+							<svg
+								class="h-6 w-6"
+								fill="none"
+								stroke="currentColor"
+								viewBox="0 0 24 24"
+								stroke-width="1.75"
+							>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z"
+								/>
+							</svg>
+						</div>
+
+						<button
+							type="button"
+							onclick={() => confirmDelete(col.slug)}
+							class="h-8 w-8 rounded-lg text-red-400 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-500/10 flex items-center justify-center opacity-0 transition-all group-hover:opacity-100"
+							title="Delete collection"
+						>
+							<svg class="h-4.5 w-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M19 7l-.867 12.142A2 2 0 0 1 16.138 21H7.862a2 2 0 0 1-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v3M4 7h16"
+								/>
+							</svg>
+						</button>
+					</div>
+
+					<!-- Content -->
+					<div class="mb-2 gap-1.5 flex flex-col">
+						<h3
+							class="font-bold tracking-tight truncate text-[1.15rem]"
+							style="color: var(--text-primary)"
+						>
 							{col.name}
 						</h3>
-						<code
-							class="rounded px-1.5 py-0.5 text-xs font-mono truncate"
-							style="background: var(--surface-alt); color: var(--text-muted)">/{col.slug}</code
-						>
+						<div class="gap-2.5 flex items-center">
+							<code
+								class="rounded-md px-2 py-0.5 text-xs font-mono font-medium truncate"
+								style="background: var(--surface-alt); color: var(--text-muted)">/{col.slug}</code
+							>
+							<span class="text-xs font-medium" style="color: var(--text-muted)">
+								• {col.fields.length} schema block{col.fields.length !== 1 ? 's' : ''}
+							</span>
+						</div>
 					</div>
-					<div
-						class="h-10 w-10 rounded-xl text-lg flex flex-shrink-0 items-center justify-center"
-						style="background: var(--brand-light); color: var(--brand)"
-					>
-						🗂
+
+					{#if col.description}
+						<p class="mt-1 text-sm line-clamp-2" style="color: var(--text-secondary)">
+							{col.description}
+						</p>
+					{/if}
+
+					<!-- Fields preview -->
+					<div class="pt-6 gap-1.5 mt-auto flex flex-wrap">
+						{#each col.fields.slice(0, 4) as field}
+							<Badge type={field.type} />
+						{/each}
+						{#if col.fields.length > 4}
+							<span
+								class="rounded-lg px-2.5 py-0.5 font-semibold inline-flex items-center text-[0.7rem]"
+								style="background: var(--surface-alt); color: var(--text-muted)"
+								>+{col.fields.length - 4}</span
+							>
+						{/if}
+						{#if col.fields.length === 0}
+							<span class="text-xs italic" style="color: var(--text-muted)"
+								>Unconfigured schema</span
+							>
+						{/if}
 					</div>
 				</div>
 
-				<!-- Description -->
-				{#if col.description}
-					<p class="text-sm line-clamp-2" style="color: var(--text-secondary)">{col.description}</p>
-				{/if}
-
-				<!-- Fields preview -->
-				<div class="gap-1.5 flex flex-wrap">
-					{#each col.fields.slice(0, 5) as field}
-						<Badge type={field.type} />
-					{/each}
-					{#if col.fields.length > 5}
-						<span
-							class="rounded-md px-2 py-0.5 text-xs inline-flex items-center"
-							style="background: var(--surface-alt); color: var(--text-muted)"
-							>+{col.fields.length - 5} more</span
-						>
-					{/if}
-					{#if col.fields.length === 0}
-						<span class="text-xs" style="color: var(--text-muted)">No fields defined</span>
-					{/if}
-				</div>
-
-				<!-- Footer: Stats + Actions -->
+				<!-- Floating Action Footer -->
 				<div
-					class="pt-4 flex items-center justify-between border-t"
-					style="border-color: var(--border)"
+					class="p-2 relative z-10 border-t transition-colors duration-300"
+					style="border-color: var(--border); background: transparent"
 				>
-					<span class="text-xs" style="color: var(--text-muted)">
-						{col.fields.length} field{col.fields.length !== 1 ? 's' : ''}
-					</span>
-					<div class="gap-2 flex items-center">
-						<Button variant="ghost" size="sm" onclick={() => confirmDelete(col.slug)}>
-							🗑 Delete
-						</Button>
-						<a
-							href="/content/{col.slug}"
-							class="gap-1 rounded-lg px-3 py-1.5 text-xs font-medium text-white inline-flex items-center transition-all hover:opacity-90"
-							style="background: var(--brand)"
+					<a
+						href="/content/{col.slug}"
+						class="gap-2 rounded-xl py-3 text-sm font-semibold flex w-full items-center justify-center transition-all hover:bg-[--brand-light]"
+						style="color: var(--brand)"
+					>
+						Manage Content
+						<svg
+							class="h-4 w-4 group-hover:translate-x-1 transition-transform duration-300"
+							fill="none"
+							stroke="currentColor"
+							viewBox="0 0 24 24"
 						>
-							Open ↗
-						</a>
-					</div>
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2.5"
+								d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"
+							/>
+						</svg>
+					</a>
 				</div>
 			</div>
 		{/each}
