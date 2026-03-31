@@ -24,12 +24,11 @@ WORKDIR /app
 # Install ca-certificates for HTTPS
 RUN apk --no-cache add ca-certificates tzdata
 
-# Create uploads directory
+# Create uploads directory for runtime uploads
 RUN mkdir -p /app/uploads
 
 # Copy binary from builder
 COPY --from=builder /app/main .
-COPY --from=builder /app/uploads /app/uploads
 
 # Expose port
 EXPOSE 3000
