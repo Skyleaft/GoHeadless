@@ -11,14 +11,7 @@
 		footer?: Snippet;
 	}
 
-	let {
-		open = $bindable(false),
-		title,
-		size = 'md',
-		onclose,
-		children,
-		footer
-	}: Props = $props();
+	let { open = $bindable(false), title, size = 'md', onclose, children, footer }: Props = $props();
 
 	let dialog: HTMLDialogElement;
 
@@ -57,7 +50,9 @@
 <dialog
 	bind:this={dialog}
 	onclick={handleBackdrop}
-	class="modal-dialog m-auto rounded-xl p-0 shadow-2xl border w-[calc(100%-2rem)] {sizes[size]} animate-scale-in"
+	class="modal-dialog rounded-2xl p-0 shadow-xl m-auto w-[calc(100%-2rem)] {sizes[
+		size
+	]} animate-scale-in"
 	style="
 		background: var(--surface);
 		border-color: var(--border);
@@ -67,14 +62,11 @@
 >
 	<!-- Header -->
 	{#if title}
-		<div
-			class="flex items-center justify-between px-6 py-4 border-b"
-			style="border-color: var(--border)"
-		>
+		<div class="px-8 py-6 flex items-center justify-between">
 			<h3 class="text-base font-semibold" style="color: var(--text-primary)">{title}</h3>
 			<button
 				onclick={handleClose}
-				class="flex items-center justify-center w-8 h-8 rounded-lg text-lg transition-colors hover:bg-[--surface-alt]"
+				class="w-8 h-8 rounded-lg text-lg flex items-center justify-center transition-colors hover:bg-[--surface-alt]"
 				style="color: var(--text-muted)"
 				aria-label="Close modal"
 			>
@@ -91,8 +83,8 @@
 	<!-- Footer -->
 	{#if footer}
 		<div
-			class="flex items-center justify-end gap-3 px-6 py-4 border-t"
-			style="border-color: var(--border); background: var(--surface-alt)"
+			class="gap-3 px-8 py-6 rounded-b-2xl flex items-center justify-end"
+			style="background: var(--surface-alt)"
 		>
 			{@render footer()}
 		</div>

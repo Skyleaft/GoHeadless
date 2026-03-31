@@ -64,12 +64,12 @@
 	<div class="w-full max-w-md">
 		{#if checking}
 			<div class="flex flex-col items-center gap-4 animate-fade-in text-center">
-				<div class="h-10 w-10 rounded-full border-4 border-[--brand] border-t-transparent animate-spin"></div>
-				<p class="text-sm text-[--text-secondary]">Checking system status...</p>
+				<div class="h-10 w-10 rounded-full border-4 border-[var(--brand)] border-t-transparent animate-spin"></div>
+				<p class="text-sm text-[var(--text-secondary)]">Checking system status...</p>
 			</div>
 		{:else}
 			<div class="card animate-scale-in overflow-hidden shadow-2xl">
-				<div class="bg-[--brand] p-8 text-center text-white">
+				<div class="bg-[var(--brand)] p-8 text-center text-white">
 					<div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-white/20 text-3xl font-bold backdrop-blur-sm">
 						G
 					</div>

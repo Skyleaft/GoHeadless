@@ -36,11 +36,11 @@
 	{#if label}
 		<label
 			for={inputId}
-			class="text-sm font-medium"
+			class="text-[10px] font-black uppercase tracking-[0.15em] opacity-50 px-1"
 			style="color: var(--text-primary)"
 		>
 			{label}
-			{#if required}<span class="text-red-500 ml-0.5">*</span>{/if}
+			{#if required}<span class="text-[var(--brand)] ml-1">●</span>{/if}
 		</label>
 	{/if}
 
@@ -53,11 +53,12 @@
 		bind:value
 		{onchange}
 		{oninput}
-		class="w-full rounded-lg border px-3 py-2 text-sm transition-all duration-150"
+		class="w-full h-12 rounded-2xl px-4 text-sm font-bold transition-all duration-200 border-2 focus:outline-none focus:ring-4 focus:ring-[var(--brand)]/10"
 		style="
-			background: var(--surface);
+			background: var(--surface-alt);
 			color: var(--text-primary);
-			border-color: {error ? '#ef4444' : 'var(--border)'};
+			border-color: {error ? '#ef4444' : 'transparent'};
+			box-shadow: {error ? 'var(--shadow-sm)' : 'inset 0 2px 4px rgba(0,0,0,0.02)'};
 		"
 	/>
 

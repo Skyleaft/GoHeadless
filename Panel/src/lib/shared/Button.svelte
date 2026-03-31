@@ -22,22 +22,23 @@
 	}: Props = $props();
 
 	const base =
-		'inline-flex items-center justify-center gap-2 font-medium rounded-lg transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 cursor-pointer select-none';
+		'inline-flex items-center justify-center gap-3 font-black rounded-2xl transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 cursor-pointer select-none';
 
 	const sizes = {
-		sm: 'h-8 px-3 text-xs',
-		md: 'h-9 px-4 text-sm',
-		lg: 'h-11 px-6 text-base'
+		sm: 'h-9 px-4 text-xs',
+		md: 'h-11 px-6 text-sm',
+		lg: 'h-14 px-8 text-base tracking-tight'
 	};
 
 	const variants = {
 		primary:
-			'bg-[--brand] text-white hover:bg-[--brand-hover] focus-visible:ring-[--brand] shadow-sm active:scale-[0.98]',
+			'bg-[var(--brand)] text-white hover:brightness-110 shadow-lg shadow-[var(--brand)]/20 active:scale-95 focus-visible:ring-[var(--brand)]',
 		secondary:
-			'bg-[--surface-alt] text-[--text-primary] border border-[--border] hover:bg-[--surface-hover] focus-visible:ring-[--brand]',
-		ghost: 'text-[--text-secondary] hover:bg-[--surface-alt] hover:text-[--text-primary] focus-visible:ring-[--brand]',
+			'bg-[var(--surface-alt)] text-[var(--text-primary)] shadow-sm hover:scale-[1.02] active:scale-95 focus-visible:ring-[var(--brand)]',
+		ghost:
+			'text-[var(--text-secondary)] hover:bg-[var(--surface-alt)] hover:text-[var(--text-primary)] active:scale-95 focus-visible:ring-[var(--brand)]',
 		danger:
-			'bg-red-500 text-white hover:bg-red-600 focus-visible:ring-red-500 shadow-sm active:scale-[0.98]'
+			'bg-red-500 text-white hover:bg-red-600 shadow-lg shadow-red-500/20 active:scale-95 focus-visible:ring-red-500'
 	};
 </script>
 
@@ -48,8 +49,7 @@
 	{onclick}
 >
 	{#if loading}
-		<span
-			class="h-4 w-4 rounded-full border-2 border-current border-t-transparent animate-spin"
+		<span class="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
 		></span>
 	{/if}
 	{@render children()}

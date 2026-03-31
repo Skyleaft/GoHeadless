@@ -32,7 +32,7 @@
 <div class="flex flex-col gap-8 animate-fade-in">
 	<div class="flex flex-col gap-2">
 		<h1 class="text-3xl font-bold tracking-tight">Welcome back, {$auth.user?.username}!</h1>
-		<p class="text-[--text-secondary]">You are logged in as <span class="font-semibold text-[--brand]">{$auth.user?.is_initial_admin ? 'Superadmin' : 'Staff'}</span>. Here is what's happening today.</p>
+		<p class="text-[var(--text-secondary)]">You are logged in as <span class="font-semibold text-[var(--brand)]">{$auth.user?.is_initial_admin ? 'Superadmin' : 'Staff'}</span>. Here is what's happening today.</p>
 	</div>
 
 	{#if $auth.user?.is_initial_admin}
@@ -55,11 +55,11 @@
 
 	<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 		<div class="lg:col-span-2 flex flex-col gap-6">
-			<div class="card p-8 bg-gradient-to-br from-[--brand] to-[#7c3aed] text-white overflow-hidden relative">
+			<div class="card p-8 bg-gradient-to-br from-[var(--brand)] to-[#7c3aed] text-white overflow-hidden relative">
 				<div class="relative z-10">
 					<h2 class="text-xl font-bold mb-4">Start Building Your API</h2>
 					<p class="text-white/80 text-sm mb-6 max-w-md">Create your first collection to define your content structure. GoHeadless will automatically generate a high-performance REST API for you.</p>
-					<a href="/collections/new" class="inline-flex h-10 items-center px-6 rounded-lg bg-white text-[--brand] font-bold text-sm transition-transform active:scale-95 shadow-xl">
+					<a href="/collections/new" class="inline-flex h-10 items-center px-6 rounded-lg bg-white text-[var(--brand)] font-bold text-sm transition-transform active:scale-95 shadow-xl">
 						Create New Collection
 					</a>
 				</div>
@@ -71,16 +71,16 @@
 			<div class="card p-6">
 				<h3 class="font-bold mb-4">Quick Actions</h3>
 				<div class="grid grid-cols-2 gap-3">
-					<a href="/collections" class="p-3 rounded-lg border border-[--border] hover:bg-[--surface-alt] transition-colors flex items-center gap-3 text-sm">
+					<a href="/collections" class="p-3 rounded-lg border border-[var(--border)] hover:bg-[var(--surface-alt)] transition-colors flex items-center gap-3 text-sm">
 						<span class="text-lg">🗂</span> Manage Collections
 					</a>
-					<a href="/admin/users" class="p-3 rounded-lg border border-[--border] hover:bg-[--surface-alt] transition-colors flex items-center gap-3 text-sm">
+					<a href="/admin/users" class="p-3 rounded-lg border border-[var(--border)] hover:bg-[var(--surface-alt)] transition-colors flex items-center gap-3 text-sm">
 						<span class="text-lg">👥</span> Manage Users
 					</a>
-					<a href="/docs" class="p-3 rounded-lg border border-[--border] hover:bg-[--surface-alt] transition-colors flex items-center gap-3 text-sm">
+					<a href="/docs" class="p-3 rounded-lg border border-[var(--border)] hover:bg-[var(--surface-alt)] transition-colors flex items-center gap-3 text-sm">
 						<span class="text-lg">📄</span> API Documentation
 					</a>
-					<button onclick={() => window.open('https://github.com/Skyleaft/GoHeadless', '_blank')} class="p-3 rounded-lg border border-[--border] hover:bg-[--surface-alt] transition-colors flex items-center gap-3 text-sm text-left">
+					<button onclick={() => window.open('https://github.com/Skyleaft/GoHeadless', '_blank')} class="p-3 rounded-lg border border-[var(--border)] hover:bg-[var(--surface-alt)] transition-colors flex items-center gap-3 text-sm text-left">
 						<span class="text-lg">⭐</span> GitHub Repository
 					</button>
 				</div>
@@ -110,10 +110,10 @@
 				</div>
 			</div>
 
-			<div class="card p-6 bg-[--brand-light]/30 border-[--brand-light]">
-				<h3 class="font-bold mb-2 text-[--brand]">Need Help?</h3>
-				<p class="text-xs text-[--text-secondary] leading-relaxed mb-4">GoHeadless is designed for speed and flexibility. Check out our documentation or join our community for support.</p>
-				<button class="text-xs font-bold text-[--brand] hover:underline">Documentation Hub →</button>
+			<div class="card p-6 bg-[var(--brand-light)]/30 border-[var(--brand-light)]">
+				<h3 class="font-bold mb-2 text-[var(--brand)]">Need Help?</h3>
+				<p class="text-xs text-[var(--text-secondary)] leading-relaxed mb-4">GoHeadless is designed for speed and flexibility. Check out our documentation or join our community for support.</p>
+				<button class="text-xs font-bold text-[var(--brand)] hover:underline">Documentation Hub →</button>
 			</div>
 		</div>
 	</div>

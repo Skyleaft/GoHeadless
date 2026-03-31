@@ -27,11 +27,16 @@
 	<title>New Collection — GoHeadless CMS</title>
 </svelte:head>
 
-<div class="flex flex-col gap-6 animate-fade-in max-w-4xl">
-	<div>
-		<h1 class="text-2xl font-bold" style="color: var(--text-primary)">New Collection</h1>
-		<p class="text-sm mt-1" style="color: var(--text-muted)">
-			Define a new dynamic collection with a custom schema.
+<div class="max-w-4xl animate-fade-in gap-10 py-4 mx-auto flex w-full flex-col">
+	<div class="px-2 relative">
+		<div
+			class="-left-4 w-1 h-12 shadow-lg absolute top-1/2 -translate-y-1/2 rounded-full bg-[--brand] shadow-[--brand]/40"
+		></div>
+		<h1 class="text-4xl font-black tracking-tighter" style="color: var(--text-primary)">
+			New Collection
+		</h1>
+		<p class="text-sm font-bold mt-2 tracking-tight opacity-50" style="color: var(--text-muted)">
+			Architect your data structure with dynamic fields and access policies.
 		</p>
 	</div>
 

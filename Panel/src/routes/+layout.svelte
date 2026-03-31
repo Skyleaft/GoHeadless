@@ -7,7 +7,7 @@
 	import { collectionsStore } from '$lib/stores/collections';
 	import { getSetupStatus } from '$lib/api/auth';
 	import type { Snippet } from 'svelte';
-	
+
 	import Sidebar from '$lib/shared/Sidebar.svelte';
 	import Topbar from '$lib/shared/Topbar.svelte';
 	import Toast from '$lib/shared/Toast.svelte';
@@ -48,7 +48,7 @@
 			if (!isAuthPage && !$auth.isAuthenticated) {
 				goto('/login');
 			}
-			
+
 			// 3. Load collections only if authenticated
 			if ($auth.isAuthenticated) {
 				collectionsStore.load();
@@ -68,10 +68,15 @@
 		{@render children()}
 	</main>
 {:else}
-	<div class="app-shell">
+	<div class="app-shell bg-[--bg]">
 		<Sidebar bind:collapsed={sidebarCollapsed} />
 
-		<div class="main-content">
+		<div
+			class="main-content transition-all duration-300"
+			style="margin-left: {sidebarCollapsed
+				? 'calc(80px + 2rem)'
+				: 'calc(var(--sidebar-width) + 2rem)'}"
+		>
 			<Topbar />
 			<main class="page-content">
 				{@render children()}
