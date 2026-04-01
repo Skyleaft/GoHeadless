@@ -4,6 +4,7 @@ import (
 	"errors"
 	"strings"
 
+	"GoHeadless/internal/apierr"
 	"GoHeadless/internal/auth"
 	"GoHeadless/internal/collection"
 
@@ -39,13 +40,13 @@ func (m *RBACMiddleware) Authenticate(c fiber.Ctx) error {
 	}
 
 	if tokenStr == "" {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "missing authentication token"})
+		return apierr.Unauthorized("missing authentication token")
 	}
 
 	// 2. Validate token
 	claims, err := m.authSvc.ValidateToken(tokenStr)
 	if err != nil {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": err.Error()})
+		return apierr.Unauthorized(err.Error())
 	}
 
 	// 3. Store claims in context
@@ -60,7 +61,7 @@ func (m *RBACMiddleware) Authenticate(c fiber.Ctx) error {
 func (m *RBACMiddleware) RequireSuperadmin(c fiber.Ctx) error {
 	isSuperuser, _ := c.Locals("is_superuser").(bool)
 	if !isSuperuser {
-		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"error": "superuser privileges required"})
+		return apierr.Forbidden("superuser privileges required")
 	}
 	return c.Next()
 }
@@ -113,15 +114,13 @@ func (m *RBACMiddleware) authorizeCollection(c fiber.Ctx, allowContentWithoutMet
 				c.Locals(CollectionUnknownLocalsKey, true)
 				return c.Next()
 			}
-			// POST /content/:slug — require JWT; handler inserts without schema when metadata is missing
-			if isContentPostCreate(c) {
-				if err := m.Authenticate(c); err != nil {
-					return err
-				}
-				return c.Next()
+			// Any write or single-record op on unknown collection — require auth then proceed
+			if err := m.Authenticate(c); err != nil {
+				return err
 			}
+			return c.Next()
 		}
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "collection not found"})
+		return apierr.NotFound("collection not found")
 	}
 
 	method := c.Method()
@@ -143,37 +142,34 @@ func (m *RBACMiddleware) authorizeCollection(c fiber.Ctx, allowContentWithoutMet
 		return c.Next()
 	}
 
-	roleID, _ := c.Locals("role_id").(string)
-	if coll.Access != nil {
-		var allowedRoles []string
-		switch method {
-		case fiber.MethodPost:
-			allowedRoles = coll.Access.CRUDPolicy.Create
-		case fiber.MethodGet:
-			allowedRoles = coll.Access.CRUDPolicy.Read
-		case fiber.MethodPut, fiber.MethodPatch:
-			allowedRoles = coll.Access.CRUDPolicy.Update
-		case fiber.MethodDelete:
-			allowedRoles = coll.Access.CRUDPolicy.Delete
-		}
+	// No access policy defined — allow any authenticated user
+	if coll.Access == nil {
+		return c.Next()
+	}
 
-		for _, r := range allowedRoles {
-			if r == roleID {
-				return c.Next()
-			}
+	roleID, _ := c.Locals("role_id").(string)
+	var allowedRoles []string
+	switch method {
+	case fiber.MethodPost:
+		allowedRoles = coll.Access.CRUDPolicy.Create
+	case fiber.MethodGet:
+		allowedRoles = coll.Access.CRUDPolicy.Read
+	case fiber.MethodPut, fiber.MethodPatch:
+		allowedRoles = coll.Access.CRUDPolicy.Update
+	case fiber.MethodDelete:
+		allowedRoles = coll.Access.CRUDPolicy.Delete
+	}
+
+	for _, r := range allowedRoles {
+		if r == roleID {
+			return c.Next()
 		}
 	}
 
-	return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"error": "insufficient permissions for this collection"})
+	return apierr.Forbidden("insufficient permissions for this collection")
 }
 
 // isContentListGET is true for GET /content/:slug (list), false for GET /content/:slug/:id.
 func isContentListGET(c fiber.Ctx) bool {
 	return c.Method() == fiber.MethodGet && c.Params("id") == ""
-}
-
-// isContentPostCreate is true for POST /content/:slug (create record), not POST elsewhere.
-func isContentPostCreate(c fiber.Ctx) bool {
-
-	return c.Method() == fiber.MethodPost && c.Params("id") == ""
 }

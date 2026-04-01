@@ -3,6 +3,7 @@ package collection
 import (
 	"context"
 
+	"GoHeadless/internal/apierr"
 	"GoHeadless/internal/domain"
 	"github.com/gofiber/fiber/v3"
 )
@@ -12,9 +13,7 @@ type Handler struct {
 }
 
 func NewHandler(service Service) *Handler {
-	return &Handler{
-		service: service,
-	}
+	return &Handler{service: service}
 }
 
 func (h *Handler) Routes(router fiber.Router) {
@@ -32,10 +31,9 @@ func (h *Handler) Routes(router fiber.Router) {
 // @Success 200 {array} domain.Collection
 // @Router /collections [get]
 func (h *Handler) ListCollections(c fiber.Ctx) error {
-	ctx := context.Background()
-	colls, err := h.service.GetAllCollections(ctx)
+	colls, err := h.service.GetAllCollections(context.Background())
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+		return apierr.Internal("failed to list collections", err)
 	}
 	return c.JSON(colls)
 }
@@ -52,14 +50,12 @@ func (h *Handler) ListCollections(c fiber.Ctx) error {
 func (h *Handler) CreateCollection(c fiber.Ctx) error {
 	var coll domain.Collection
 	if err := c.Bind().Body(&coll); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+		return apierr.BadRequest("invalid request body")
 	}
 
-	ctx := context.Background()
-	if err := h.service.CreateCollection(ctx, &coll); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+	if err := h.service.CreateCollection(context.Background(), &coll); err != nil {
+		return apierr.BadRequest(err.Error())
 	}
-
 	return c.Status(fiber.StatusCreated).JSON(coll)
 }
 
@@ -72,11 +68,9 @@ func (h *Handler) CreateCollection(c fiber.Ctx) error {
 // @Success 200 {object} domain.Collection
 // @Router /collections/{slug} [get]
 func (h *Handler) GetCollection(c fiber.Ctx) error {
-	slug := c.Params("slug")
-	ctx := context.Background()
-	coll, err := h.service.GetCollection(ctx, slug)
+	coll, err := h.service.GetCollection(context.Background(), c.Params("slug"))
 	if err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "collection not found"})
+		return apierr.NotFound("collection not found")
 	}
 	return c.JSON(coll)
 }
@@ -89,10 +83,8 @@ func (h *Handler) GetCollection(c fiber.Ctx) error {
 // @Success 204 "No Content"
 // @Router /collections/{slug} [delete]
 func (h *Handler) DeleteCollection(c fiber.Ctx) error {
-	slug := c.Params("slug")
-	ctx := context.Background()
-	if err := h.service.DeleteCollection(ctx, slug); err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	if err := h.service.DeleteCollection(context.Background(), c.Params("slug")); err != nil {
+		return apierr.Internal("failed to delete collection", err)
 	}
 	return c.SendStatus(fiber.StatusNoContent)
 }

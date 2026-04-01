@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"GoHeadless/internal/apierr"
 	"GoHeadless/internal/domain"
 	"GoHeadless/internal/middleware"
 
@@ -16,9 +17,7 @@ type Handler struct {
 }
 
 func NewHandler(service Service) *Handler {
-	return &Handler{
-		service: service,
-	}
+	return &Handler{service: service}
 }
 
 func (h *Handler) Routes(router fiber.Router) {
@@ -47,7 +46,7 @@ func (h *Handler) ListRecords(c fiber.Ctx) error {
 	parser := NewQueryParser()
 	pq, err := parser.Parse(string(c.Request().URI().QueryString()))
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+		return apierr.BadRequest(err.Error())
 	}
 
 	if c.Locals(middleware.CollectionUnknownLocalsKey) == true {
@@ -61,16 +60,15 @@ func (h *Handler) ListRecords(c fiber.Ctx) error {
 
 	stripInternal := c.Locals("user_id") == nil
 
-	ctx := context.Background()
-	out, err := h.service.ListRecords(ctx, slug, pq, stripInternal)
+	out, err := h.service.ListRecords(context.Background(), slug, pq, stripInternal)
 	if err != nil {
 		switch {
 		case errors.Is(err, ErrInvalidQuery):
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+			return apierr.BadRequest(err.Error())
 		case errors.Is(err, ErrCollectionNotFound):
-			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": err.Error()})
+			return apierr.NotFound("collection not found")
 		default:
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+			return apierr.Internal("failed to list records", err)
 		}
 	}
 	return c.JSON(out)
@@ -90,15 +88,13 @@ func (h *Handler) CreateRecord(c fiber.Ctx) error {
 	slug := c.Params("slug")
 	var record domain.Record
 	if err := c.Bind().Body(&record); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+		return apierr.BadRequest("invalid request body")
 	}
 
-	ctx := context.Background()
-	id, err := h.service.CreateRecord(ctx, slug, record)
+	id, err := h.service.CreateRecord(context.Background(), slug, record)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+		return apierr.BadRequest(err.Error())
 	}
-
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{"id": id})
 }
 
@@ -113,16 +109,14 @@ func (h *Handler) CreateRecord(c fiber.Ctx) error {
 // @Router /content/{collSlug}/{id} [get]
 func (h *Handler) GetRecord(c fiber.Ctx) error {
 	slug := c.Params("slug")
-	idHex := c.Params("id")
-	id, err := primitive.ObjectIDFromHex(idHex)
+	id, err := primitive.ObjectIDFromHex(c.Params("id"))
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid object id"})
+		return apierr.BadRequest("invalid object id")
 	}
 
-	ctx := context.Background()
-	record, err := h.service.GetRecord(ctx, slug, id)
+	record, err := h.service.GetRecord(context.Background(), slug, id)
 	if err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "record not found"})
+		return apierr.NotFound("record not found")
 	}
 	return c.JSON(record)
 }
@@ -140,22 +134,19 @@ func (h *Handler) GetRecord(c fiber.Ctx) error {
 // @Router /content/{collSlug}/{id} [put]
 func (h *Handler) UpdateRecord(c fiber.Ctx) error {
 	slug := c.Params("slug")
-	idHex := c.Params("id")
-	id, err := primitive.ObjectIDFromHex(idHex)
+	id, err := primitive.ObjectIDFromHex(c.Params("id"))
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid object id"})
+		return apierr.BadRequest("invalid object id")
 	}
 
 	var record domain.Record
 	if err := c.Bind().Body(&record); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+		return apierr.BadRequest("invalid request body")
 	}
 
-	ctx := context.Background()
-	if err := h.service.UpdateRecord(ctx, slug, id, record); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+	if err := h.service.UpdateRecord(context.Background(), slug, id, record); err != nil {
+		return apierr.BadRequest(err.Error())
 	}
-
 	return c.SendStatus(fiber.StatusNoContent)
 }
 
@@ -169,16 +160,13 @@ func (h *Handler) UpdateRecord(c fiber.Ctx) error {
 // @Router /content/{collSlug}/{id} [delete]
 func (h *Handler) DeleteRecord(c fiber.Ctx) error {
 	slug := c.Params("slug")
-	idHex := c.Params("id")
-	id, err := primitive.ObjectIDFromHex(idHex)
+	id, err := primitive.ObjectIDFromHex(c.Params("id"))
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid object id"})
+		return apierr.BadRequest("invalid object id")
 	}
 
-	ctx := context.Background()
-	if err := h.service.DeleteRecord(ctx, slug, id); err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	if err := h.service.DeleteRecord(context.Background(), slug, id); err != nil {
+		return apierr.Internal("failed to delete record", err)
 	}
-
 	return c.SendStatus(fiber.StatusNoContent)
 }

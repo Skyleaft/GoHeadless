@@ -17,10 +17,12 @@ package main
 
 import (
 	"context"
+	"errors"
 	"log"
 	"os"
 
 	"GoHeadless/docs"
+	"GoHeadless/internal/apierr"
 	"GoHeadless/internal/auth"
 	"GoHeadless/internal/collection"
 	"GoHeadless/internal/content"
@@ -93,20 +95,24 @@ func main() {
 	app := fiber.New(fiber.Config{
 		AppName: "GoHeadless CMS v1",
 		ErrorHandler: func(c fiber.Ctx, err error) error {
-			// default 500
-			code := fiber.StatusInternalServerError
-
-			if e, ok := err.(*fiber.Error); ok {
-				code = e.Code
+			var ae *apierr.AppError
+			if ok := errors.As(err, &ae); ok {
+				if ae.Internal != nil {
+					log.Printf("[ERROR] %s %s → %s: %v", c.Method(), c.Path(), ae.Message, ae.Internal)
+				}
+				return c.Status(ae.Code).JSON(fiber.Map{"error": ae.Message})
 			}
 
-			if c.Response().StatusCode() != 0 {
-				code = c.Response().StatusCode()
+			// fiber.Error (e.g. 404 from router)
+			if fe, ok := err.(*fiber.Error); ok {
+				log.Printf("[FIBER] %s %s → %d %s", c.Method(), c.Path(), fe.Code, fe.Message)
+				return nil
+				//return c.Status(fe.Code).JSON(fiber.Map{"error": fe.Message})
 			}
 
-			return c.Status(code).JSON(fiber.Map{
-				"error": err.Error(),
-			})
+			// Unexpected error — log full detail, return generic message
+			log.Printf("[ERROR] %s %s → unhandled: %v", c.Method(), c.Path(), err)
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "internal server error"})
 		},
 	})
 
