@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
-	"time"
 
 	"GoHeadless/internal/domain"
 	"go.mongodb.org/mongo-driver/bson"
@@ -184,9 +183,9 @@ func coerceSingleValue(sf schemaField, raw string) (interface{}, error) {
 		}
 
 	case domain.TypeDatePicker, domain.TypeTimePicker, domain.TypeDateTimePicker:
-		t, err := time.Parse(time.RFC3339, raw)
+		t, err := parseDateTime(raw)
 		if err != nil {
-			return nil, fmt.Errorf("expected RFC3339 datetime")
+			return nil, fmt.Errorf("expected a valid date/datetime string")
 		}
 		return primitive.NewDateTimeFromTime(t), nil
 
@@ -213,10 +212,19 @@ func buildSearchOr(search string, searchable []schemaField) bson.M {
 		if !sf.Searchable || sf.Internal {
 			continue
 		}
-		if !isStringLike(sf.Type) {
-			continue
+		switch {
+		case isStringLike(sf.Type):
+			or = append(or, bson.M{sf.Path: pattern})
+		case sf.Type == domain.TypeNumberInput || sf.Type == domain.TypeSliderField || sf.Type == domain.TypeRatingField:
+			var x float64
+			if _, err := fmt.Sscanf(term, "%f", &x); err == nil {
+				or = append(or, bson.M{sf.Path: x})
+			}
+		case sf.Type == domain.TypeDatePicker || sf.Type == domain.TypeTimePicker || sf.Type == domain.TypeDateTimePicker:
+			if t, err := parseDateTime(term); err == nil {
+				or = append(or, bson.M{sf.Path: primitive.NewDateTimeFromTime(t)})
+			}
 		}
-		or = append(or, bson.M{sf.Path: pattern})
 	}
 	if len(or) == 0 {
 		return bson.M{"_id": bson.M{"$exists": false}} // match nothing

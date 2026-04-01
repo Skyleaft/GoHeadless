@@ -15,6 +15,11 @@
 	let expanded = $state(true);
 	let showAdvanced = $state(false);
 
+	$effect(() => {
+		if (field.searchable === undefined) field.searchable = true;
+		if (field.internal === undefined) field.internal = false;
+	});
+
 	function addOption() {
 		field.options = [...(field.options ?? []), { label: '', value: '' }];
 	}
@@ -32,7 +37,7 @@
 				unique: false,
 				is_array: false,
 				array_config: { unique_items: false },
-				searchable: false,
+				searchable: true,
 				internal: false
 			}
 		];
@@ -147,6 +152,40 @@
 				>
 					Unique value
 				</label>
+			</div>
+
+			<!-- Query Engine Flags -->
+			<div class="gap-4 flex flex-wrap items-center">
+				<div class="gap-2 flex items-center">
+					<input
+						type="checkbox"
+						bind:checked={field.searchable}
+						id="searchable-{field.key}"
+						class="w-4 h-4 accent-[--brand]"
+					/>
+					<label
+						for="searchable-{field.key}"
+						class="text-sm cursor-pointer"
+						style="color: var(--text-secondary)"
+					>
+						Searchable
+					</label>
+				</div>
+				<div class="gap-2 flex items-center">
+					<input
+						type="checkbox"
+						bind:checked={field.internal}
+						id="internal-{field.key}"
+						class="w-4 h-4 accent-[--brand]"
+					/>
+					<label
+						for="internal-{field.key}"
+						class="text-sm cursor-pointer"
+						style="color: var(--text-secondary)"
+					>
+						Internal
+					</label>
+				</div>
 			</div>
 
 			<!-- Options (select/radio/multiselect/checkbox) -->

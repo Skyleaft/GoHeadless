@@ -46,7 +46,7 @@
 				unique: false,
 				is_array: false,
 				array_config: { unique_items: false },
-				searchable: false,
+				searchable: true,
 				internal: false
 			}
 		];

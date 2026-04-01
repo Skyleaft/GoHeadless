@@ -144,9 +144,8 @@ func (s *service) validateFields(fields []domain.Field, record domain.Record) er
 
 			case domain.TypeDatePicker, domain.TypeTimePicker, domain.TypeDateTimePicker:
 				if strVal, ok := fieldVal.(string); ok {
-					_, err := time.Parse(time.RFC3339, strVal)
-					if err != nil {
-						return fmt.Errorf("field %s must be valid RFC3339 datetime string", field.Key)
+					if _, err := parseDateTime(strVal); err != nil {
+						return fmt.Errorf("field %s must be a valid date/datetime string", field.Key)
 					}
 				} else if _, ok := fieldVal.(primitive.DateTime); !ok {
 					return fmt.Errorf("field %s has invalid datetime type %v", field.Key, reflect.TypeOf(fieldVal))
@@ -210,7 +209,7 @@ func (s *service) validateFields(fields []domain.Field, record domain.Record) er
 					}
 				} else if field.Type == domain.TypeDatePicker || field.Type == domain.TypeTimePicker || field.Type == domain.TypeDateTimePicker {
 					if strVal, ok := item.(string); ok {
-						if t, err := time.Parse(time.RFC3339, strVal); err == nil {
+						if t, err := parseDateTime(strVal); err == nil {
 							items[i] = primitive.NewDateTimeFromTime(t)
 						}
 					}
@@ -232,7 +231,7 @@ func (s *service) validateFields(fields []domain.Field, record domain.Record) er
 				}
 			} else if field.Type == domain.TypeDatePicker || field.Type == domain.TypeTimePicker || field.Type == domain.TypeDateTimePicker {
 				if strVal, ok := val.(string); ok {
-					if t, err := time.Parse(time.RFC3339, strVal); err == nil {
+					if t, err := parseDateTime(strVal); err == nil {
 						record[field.Key] = primitive.NewDateTimeFromTime(t)
 					}
 				}
@@ -240,6 +239,23 @@ func (s *service) validateFields(fields []domain.Field, record domain.Record) er
 		}
 	}
 	return nil
+}
+
+var dateFormats = []string{
+	time.RFC3339,
+	"2006-01-02",
+	"2006-01-02T15:04:05",
+	"15:04:05",
+	"15:04",
+}
+
+func parseDateTime(s string) (time.Time, error) {
+	for _, layout := range dateFormats {
+		if t, err := time.Parse(layout, s); err == nil {
+			return t, nil
+		}
+	}
+	return time.Time{}, fmt.Errorf("unrecognized date format: %s", s)
 }
 
 func (s *service) CreateRecord(ctx context.Context, collSlug string, record domain.Record) (primitive.ObjectID, error) {
