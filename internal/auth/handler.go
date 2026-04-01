@@ -21,17 +21,16 @@ func (h *Handler) PublicRoutes(router fiber.Router) {
 }
 
 func (h *Handler) AdminRoutes(router fiber.Router) {
-	admin := router.Group("/admin")
-	admin.Get("/users", h.GetUsers)
-	admin.Post("/users", h.CreateUser)
-	admin.Delete("/users/:id", h.DeleteUser)
+	router.Get("/users", h.GetUsers)
+	router.Post("/users", h.CreateUser)
+	router.Delete("/users/:id", h.DeleteUser)
 
-	admin.Get("/roles", h.GetRoles)
-	admin.Post("/roles", h.CreateRole)
-	admin.Put("/roles/:id", h.UpdateRole)
-	admin.Delete("/roles/:id", h.DeleteRole)
+	router.Get("/roles", h.GetRoles)
+	router.Post("/roles", h.CreateRole)
+	router.Put("/roles/:id", h.UpdateRole)
+	router.Delete("/roles/:id", h.DeleteRole)
 
-	admin.Get("/stats", h.GetStats)
+	router.Get("/stats", h.GetStats)
 }
 
 // Login godoc

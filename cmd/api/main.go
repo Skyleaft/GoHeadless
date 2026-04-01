@@ -149,7 +149,7 @@ func main() {
 	uploadHandler.Routes(protected.Group("/upload"))
 
 	// Admin-only Routes (Superadmin required)
-	adminGroup := protected.Group("", rbac.RequireSuperadmin)
+	adminGroup := protected.Group("/admin", rbac.RequireSuperadmin)
 	authHandler.AdminRoutes(adminGroup)
 
 	// Start Server
