@@ -183,14 +183,14 @@ const docTemplate = `{
         },
         "/content/{collSlug}": {
             "get": {
-                "description": "Fetch all dynamic content records for the given collection slug",
+                "description": "Paginated list with search, filter[field][op], and sort (-field for DESC). Anonymous users on public collections receive internal fields stripped.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "content"
                 ],
-                "summary": "List all records in a collection",
+                "summary": "List records in a collection (query engine)",
                 "parameters": [
                     {
                         "type": "string",
@@ -198,17 +198,43 @@ const docTemplate = `{
                         "name": "collSlug",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page (default 1)",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size (default 10, max 100)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search across searchable text fields",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Sort field; prefix - for descending",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Dynamic filters: filter[key]=val or filter[key][gt]=val",
+                        "name": "filter",
+                        "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "type": "object",
-                                "additionalProperties": true
-                            }
+                            "$ref": "#/definitions/content.ListRecordsResult"
                         }
                     }
                 }
@@ -619,6 +645,26 @@ const docTemplate = `{
                 }
             }
         },
+        "content.ListRecordsResult": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/domain.Record"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
         "domain.AccessControl": {
             "type": "object",
             "properties": {
@@ -750,6 +796,10 @@ const docTemplate = `{
                         "$ref": "#/definitions/domain.Field"
                     }
                 },
+                "internal": {
+                    "description": "Strip from API responses for anonymous access to public collections",
+                    "type": "boolean"
+                },
                 "is_array": {
                     "description": "Array Configuration",
                     "type": "boolean"
@@ -786,6 +836,10 @@ const docTemplate = `{
                     ]
                 },
                 "required": {
+                    "type": "boolean"
+                },
+                "searchable": {
+                    "description": "Query engine: include field in full-text-style search across records",
                     "type": "boolean"
                 },
                 "type": {
@@ -912,6 +966,10 @@ const docTemplate = `{
                 },
                 "value": {}
             }
+        },
+        "domain.Record": {
+            "type": "object",
+            "additionalProperties": true
         },
         "domain.RelationConfig": {
             "type": "object",

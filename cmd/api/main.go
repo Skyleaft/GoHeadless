@@ -68,6 +68,10 @@ func main() {
 	recordRepo := content.NewRepository(mongoDB.Database)
 	authRepo := auth.NewRepository(mongoDB.Database)
 
+	if err := collRepo.EnsurePhysicalCollections(context.Background()); err != nil {
+		log.Printf("ensure physical MongoDB collections: %v", err)
+	}
+
 	// 4. Initialize Services
 	collService := collection.NewService(collRepo)
 	contentService := content.NewService(recordRepo, collRepo)
@@ -88,6 +92,22 @@ func main() {
 	// 6. Setup Fiber Application
 	app := fiber.New(fiber.Config{
 		AppName: "GoHeadless CMS v1",
+		ErrorHandler: func(c fiber.Ctx, err error) error {
+			// default 500
+			code := fiber.StatusInternalServerError
+
+			if e, ok := err.(*fiber.Error); ok {
+				code = e.Code
+			}
+
+			if c.Response().StatusCode() != 0 {
+				code = c.Response().StatusCode()
+			}
+
+			return c.Status(code).JSON(fiber.Map{
+				"error": err.Error(),
+			})
+		},
 	})
 
 	// Middleware
@@ -109,7 +129,7 @@ func main() {
 
 	// Content routes: AuthorizeCollection handles public access check first,
 	// then authentication if needed. NOT under protected group to allow public access.
-	contentGroup := api.Group("/content/:slug", rbac.AuthorizeCollection)
+	contentGroup := api.Group("/content/:slug", rbac.AuthorizeContentCollection)
 	contentHandler.Routes(contentGroup)
 
 	// Protected Routes (Require Authentication)

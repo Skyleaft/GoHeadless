@@ -1,13 +1,18 @@
 package middleware
 
 import (
+	"errors"
 	"strings"
 
 	"GoHeadless/internal/auth"
 	"GoHeadless/internal/collection"
 
 	"github.com/gofiber/fiber/v3"
+	"go.mongodb.org/mongo-driver/mongo"
 )
+
+// CollectionUnknownLocalsKey is set when GET /content/:slug (list) is allowed without metadata (empty list).
+const CollectionUnknownLocalsKey = "collection_unknown"
 
 type RBACMiddleware struct {
 	authSvc auth.Service
@@ -60,10 +65,39 @@ func (m *RBACMiddleware) RequireSuperadmin(c fiber.Ctx) error {
 	return c.Next()
 }
 
-// AuthorizeCollection checks if the authenticated user has access to the requested collection.
-// For public collections with GET requests, it allows access without authentication.
-// For all other cases, it requires and validates authentication.
+// tryAuthenticate sets user locals when a valid JWT is present; never fails the request.
+func (m *RBACMiddleware) tryAuthenticate(c fiber.Ctx) {
+	authHeader := c.Get("Authorization")
+	tokenStr := ""
+	if authHeader != "" && strings.HasPrefix(authHeader, "Bearer ") {
+		tokenStr = strings.TrimPrefix(authHeader, "Bearer ")
+	} else {
+		tokenStr = c.Cookies("jwt")
+	}
+	if tokenStr == "" {
+		return
+	}
+	claims, err := m.authSvc.ValidateToken(tokenStr)
+	if err != nil {
+		return
+	}
+	c.Locals("user_id", claims.UserID)
+	c.Locals("role_id", claims.RoleID)
+	c.Locals("is_superuser", claims.IsSuperuser)
+}
+
+// AuthorizeCollection checks access for /collections/... routes (metadata must exist).
 func (m *RBACMiddleware) AuthorizeCollection(c fiber.Ctx) error {
+	return m.authorizeCollection(c, false)
+}
+
+// AuthorizeContentCollection is for /content/:slug/... only. Unknown slug: GET list returns empty data;
+// POST create requires auth and inserts without a schema document (see CreateRecord service).
+func (m *RBACMiddleware) AuthorizeContentCollection(c fiber.Ctx) error {
+	return m.authorizeCollection(c, true)
+}
+
+func (m *RBACMiddleware) authorizeCollection(c fiber.Ctx, allowContentWithoutMetadata bool) error {
 	slug := c.Params("slug")
 	if slug == "" {
 		slug = c.Params("collSlug")
@@ -72,37 +106,43 @@ func (m *RBACMiddleware) AuthorizeCollection(c fiber.Ctx) error {
 		return c.Next()
 	}
 
-	// 1. Get Collection Permissions
 	coll, err := m.collSvc.GetCollection(c.Context(), slug)
 	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) && allowContentWithoutMetadata {
+			if isContentListGET(c) {
+				c.Locals(CollectionUnknownLocalsKey, true)
+				return c.Next()
+			}
+			// POST /content/:slug — require JWT; handler inserts without schema when metadata is missing
+			if isContentPostCreate(c) {
+				if err := m.Authenticate(c); err != nil {
+					return err
+				}
+				return c.Next()
+			}
+		}
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "collection not found"})
 	}
 
 	method := c.Method()
 
-	// 2. Check Public Access (Read only) - allows bypass of authentication
-	// If Access is nil or IsPublic is true, allow GET requests without authentication
 	if coll.Access != nil && coll.Access.IsPublic && method == fiber.MethodGet {
+		m.tryAuthenticate(c)
 		return c.Next()
 	}
 
-	// 3. For non-public collections or non-GET methods, require authentication
-	// Only process auth if it hasn't been done already (check for user_id in locals)
 	hasAuth := c.Locals("user_id") != nil
 	if !hasAuth {
-		// Run authentication inline
 		if err := m.Authenticate(c); err != nil {
 			return err
 		}
 	}
 
-	// 4. Superuser Bypass (check again after auth)
 	isSuperuser, _ := c.Locals("is_superuser").(bool)
 	if isSuperuser {
 		return c.Next()
 	}
 
-	// 5. Check Granular Permissions (CRUD Policy)
 	roleID, _ := c.Locals("role_id").(string)
 	if coll.Access != nil {
 		var allowedRoles []string
@@ -125,4 +165,15 @@ func (m *RBACMiddleware) AuthorizeCollection(c fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"error": "insufficient permissions for this collection"})
+}
+
+// isContentListGET is true for GET /content/:slug (list), false for GET /content/:slug/:id.
+func isContentListGET(c fiber.Ctx) bool {
+	return c.Method() == fiber.MethodGet && c.Params("id") == ""
+}
+
+// isContentPostCreate is true for POST /content/:slug (create record), not POST elsewhere.
+func isContentPostCreate(c fiber.Ctx) bool {
+
+	return c.Method() == fiber.MethodPost && c.Params("id") == ""
 }

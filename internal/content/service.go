@@ -9,12 +9,19 @@ import (
 	"time"
 
 	"GoHeadless/internal/domain"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
+)
+
+var (
+	ErrInvalidQuery       = errors.New("invalid query")
+	ErrCollectionNotFound = errors.New("collection not found")
 )
 
 type Service interface {
 	CreateRecord(ctx context.Context, collSlug string, record domain.Record) (primitive.ObjectID, error)
-	GetRecords(ctx context.Context, collSlug string) ([]domain.Record, error)
+	ListRecords(ctx context.Context, collSlug string, pq ParsedQuery, stripInternal bool) (ListRecordsResult, error)
 	GetRecord(ctx context.Context, collSlug string, id primitive.ObjectID) (domain.Record, error)
 	UpdateRecord(ctx context.Context, collSlug string, id primitive.ObjectID, record domain.Record) error
 	DeleteRecord(ctx context.Context, collSlug string, id primitive.ObjectID) error
@@ -238,6 +245,10 @@ func (s *service) validateFields(fields []domain.Field, record domain.Record) er
 func (s *service) CreateRecord(ctx context.Context, collSlug string, record domain.Record) (primitive.ObjectID, error) {
 	coll, err := s.collectionRepo.FindBySlug(ctx, collSlug)
 	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			// No schema in system_collections yet: insert raw document (MongoDB creates collection on first write).
+			return s.recordRepo.Create(ctx, collSlug, record)
+		}
 		return primitive.NilObjectID, errors.New("collection not found")
 	}
 
@@ -248,8 +259,58 @@ func (s *service) CreateRecord(ctx context.Context, collSlug string, record doma
 	return s.recordRepo.Create(ctx, collSlug, record)
 }
 
-func (s *service) GetRecords(ctx context.Context, collSlug string) ([]domain.Record, error) {
-	return s.recordRepo.FindAll(ctx, collSlug)
+func (s *service) ListRecords(ctx context.Context, collSlug string, pq ParsedQuery, stripInternal bool) (ListRecordsResult, error) {
+	coll, err := s.collectionRepo.FindBySlug(ctx, collSlug)
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return ListRecordsResult{}, ErrCollectionNotFound
+		}
+		return ListRecordsResult{}, err
+	}
+
+	flat := flattenSchemaFields(coll.Fields, "")
+	schemaMap := schemaFieldMap(flat)
+
+	if err := validateSortField(pq.SortField, schemaMap); err != nil {
+		return ListRecordsResult{}, fmt.Errorf("%w: %v", ErrInvalidQuery, err)
+	}
+
+	baseFilter, err := buildFilterBSON(pq, schemaMap)
+	if err != nil {
+		return ListRecordsResult{}, fmt.Errorf("%w: %v", ErrInvalidQuery, err)
+	}
+
+	searchDoc := buildSearchOr(pq.Search, flat)
+	filter := mergeFilterAndSearch(baseFilter, searchDoc)
+	sort := buildSort(pq.SortField, pq.SortDesc)
+
+	var proj bson.M
+	if stripInternal {
+		proj = publicProjection(flat)
+	}
+
+	skip := int64((pq.Page - 1) * pq.Limit)
+	limit := int64(pq.Limit)
+
+	items, err := s.recordRepo.FindWithOptions(ctx, collSlug, filter, sort, skip, limit, proj)
+	if err != nil {
+		return ListRecordsResult{}, err
+	}
+	if items == nil {
+		items = []domain.Record{}
+	}
+
+	total, err := s.recordRepo.CountWithFilter(ctx, collSlug, filter)
+	if err != nil {
+		return ListRecordsResult{}, err
+	}
+
+	return ListRecordsResult{
+		Data:  items,
+		Total: total,
+		Page:  pq.Page,
+		Limit: pq.Limit,
+	}, nil
 }
 
 func (s *service) GetRecord(ctx context.Context, collSlug string, id primitive.ObjectID) (domain.Record, error) {

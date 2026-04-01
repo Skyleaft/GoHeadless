@@ -7,6 +7,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type mongoRepo struct {
@@ -63,4 +64,25 @@ func (r *mongoRepo) Delete(ctx context.Context, collectionName string, id primit
 
 func (r *mongoRepo) CountRecords(ctx context.Context, collectionName string) (int64, error) {
 	return r.db.Collection(collectionName).CountDocuments(ctx, bson.M{})
+}
+
+func (r *mongoRepo) FindWithOptions(ctx context.Context, collectionName string, filter bson.M, sort bson.D, skip, limit int64, projection bson.M) ([]domain.Record, error) {
+	opts := options.Find().SetSort(sort).SetSkip(skip).SetLimit(limit)
+	if len(projection) > 0 {
+		opts.SetProjection(projection)
+	}
+	var result []domain.Record
+	cursor, err := r.db.Collection(collectionName).Find(ctx, filter, opts)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+	if err := cursor.All(ctx, &result); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+func (r *mongoRepo) CountWithFilter(ctx context.Context, collectionName string, filter bson.M) (int64, error) {
+	return r.db.Collection(collectionName).CountDocuments(ctx, filter)
 }

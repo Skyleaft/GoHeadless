@@ -3,16 +3,19 @@ import { contentApi } from '$lib/api/content';
 import type { PageLoad } from './$types';
 import { error } from '@sveltejs/kit';
 
-export const load: PageLoad = async ({ params }) => {
+export const load: PageLoad = async ({ params, url }) => {
 	try {
-		const [collection, records] = await Promise.all([
+		const [collection, result] = await Promise.all([
 			collectionsApi.get(params.slug),
-			contentApi.list(params.slug)
+			contentApi.list(params.slug, url.searchParams)
 		]);
 
 		return {
 			collection,
-			records: records ?? [],
+			records: result.data ?? [],
+			total: result.total ?? 0,
+			page: result.page ?? 1,
+			limit: result.limit ?? 10,
 			slug: params.slug
 		};
 	} catch (err: any) {

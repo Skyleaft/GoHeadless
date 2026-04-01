@@ -2,8 +2,10 @@ package content
 
 import (
 	"context"
+	"errors"
 
 	"GoHeadless/internal/domain"
+	"GoHeadless/internal/middleware"
 
 	"github.com/gofiber/fiber/v3"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -20,31 +22,58 @@ func NewHandler(service Service) *Handler {
 }
 
 func (h *Handler) Routes(router fiber.Router) {
-	router.Get("/", h.ListRecords)
-	router.Get("", h.ListRecords) // Without trailing slash
-	router.Post("/", h.CreateRecord)
-	router.Post("", h.CreateRecord) // Without trailing slash
+	router.Get("", h.ListRecords)
+	router.Post("", h.CreateRecord)
 	router.Get("/:id", h.GetRecord)
 	router.Put("/:id", h.UpdateRecord)
 	router.Delete("/:id", h.DeleteRecord)
 }
 
-// ListRecords list all records for a collection
-// @Summary List all records in a collection
-// @Description Fetch all dynamic content records for the given collection slug
+// ListRecords lists records with optional search, filter, sort, and pagination.
+// @Summary List records in a collection (query engine)
+// @Description Paginated list with search, filter[field][op], and sort (-field for DESC). Anonymous users on public collections receive internal fields stripped.
 // @Tags content
 // @Produce json
 // @Param collSlug path string true "Collection Slug"
-// @Success 200 {array} map[string]interface{}
+// @Param page query int false "Page (default 1)"
+// @Param limit query int false "Page size (default 10, max 100)"
+// @Param search query string false "Search across searchable text fields"
+// @Param sort query string false "Sort field; prefix - for descending"
+// @Param filter query string false "Dynamic filters: filter[key]=val or filter[key][gt]=val"
+// @Success 200 {object} ListRecordsResult
 // @Router /content/{collSlug} [get]
 func (h *Handler) ListRecords(c fiber.Ctx) error {
 	slug := c.Params("slug")
-	ctx := context.Background()
-	records, err := h.service.GetRecords(ctx, slug)
+	parser := NewQueryParser()
+	pq, err := parser.Parse(string(c.Request().URI().QueryString()))
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
-	return c.JSON(records)
+
+	if c.Locals(middleware.CollectionUnknownLocalsKey) == true {
+		return c.JSON(ListRecordsResult{
+			Data:  []domain.Record{},
+			Total: 0,
+			Page:  pq.Page,
+			Limit: pq.Limit,
+		})
+	}
+
+	stripInternal := c.Locals("user_id") == nil
+
+	ctx := context.Background()
+	out, err := h.service.ListRecords(ctx, slug, pq, stripInternal)
+	if err != nil {
+		switch {
+		case errors.Is(err, ErrInvalidQuery):
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+		case errors.Is(err, ErrCollectionNotFound):
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": err.Error()})
+		default:
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+		}
+	}
+	return c.JSON(out)
 }
 
 // CreateRecord create a new record in a collection

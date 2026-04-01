@@ -98,6 +98,15 @@ export interface Field {
 	array_config?: ArrayConfig;
 
 	props?: Record<string, unknown>;
+
+	/**
+	 * Include in content search (`?search=`). When omitted, treated as false (see new field defaults in CollectionForm).
+	 */
+	searchable?: boolean;
+	/**
+	 * Strip from anonymous public `GET /content/{slug}` responses. When omitted, treated as false.
+	 */
+	internal?: boolean;
 }
 
 export interface CRUDPolicy {

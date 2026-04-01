@@ -17,6 +17,19 @@ definitions:
       user:
         $ref: '#/definitions/domain.User'
     type: object
+  content.ListRecordsResult:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/domain.Record'
+        type: array
+      limit:
+        type: integer
+      page:
+        type: integer
+      total:
+        type: integer
+    type: object
   domain.AccessControl:
     properties:
       allowed_roles:
@@ -101,6 +114,9 @@ definitions:
         items:
           $ref: '#/definitions/domain.Field'
         type: array
+      internal:
+        description: Strip from API responses for anonymous access to public collections
+        type: boolean
       is_array:
         description: Array Configuration
         type: boolean
@@ -125,6 +141,10 @@ definitions:
         - $ref: '#/definitions/domain.RelationConfig'
         description: Relational & Advanced Logic
       required:
+        type: boolean
+      searchable:
+        description: 'Query engine: include field in full-text-style search across
+          records'
         type: boolean
       type:
         $ref: '#/definitions/domain.FieldType'
@@ -241,6 +261,9 @@ definitions:
       label:
         type: string
       value: {}
+    type: object
+  domain.Record:
+    additionalProperties: true
     type: object
   domain.RelationConfig:
     properties:
@@ -411,12 +434,33 @@ paths:
       - collections
   /content/{collSlug}:
     get:
-      description: Fetch all dynamic content records for the given collection slug
+      description: Paginated list with search, filter[field][op], and sort (-field
+        for DESC). Anonymous users on public collections receive internal fields stripped.
       parameters:
       - description: Collection Slug
         in: path
         name: collSlug
         required: true
+        type: string
+      - description: Page (default 1)
+        in: query
+        name: page
+        type: integer
+      - description: Page size (default 10, max 100)
+        in: query
+        name: limit
+        type: integer
+      - description: Search across searchable text fields
+        in: query
+        name: search
+        type: string
+      - description: Sort field; prefix - for descending
+        in: query
+        name: sort
+        type: string
+      - description: 'Dynamic filters: filter[key]=val or filter[key][gt]=val'
+        in: query
+        name: filter
         type: string
       produces:
       - application/json
@@ -424,11 +468,8 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              additionalProperties: true
-              type: object
-            type: array
-      summary: List all records in a collection
+            $ref: '#/definitions/content.ListRecordsResult'
+      summary: List records in a collection (query engine)
       tags:
       - content
     post:

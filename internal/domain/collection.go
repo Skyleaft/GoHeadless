@@ -114,6 +114,11 @@ type Field struct {
 
 	// Additional dynamic properties for specific components
 	Props map[string]interface{} `bson:"props,omitempty" json:"props,omitempty"`
+
+	// Query engine: include field in full-text-style search across records
+	Searchable bool `bson:"searchable,omitempty" json:"searchable,omitempty"`
+	// Strip from API responses for anonymous access to public collections
+	Internal bool `bson:"internal,omitempty" json:"internal,omitempty"`
 }
 
 type CRUDPolicy struct {

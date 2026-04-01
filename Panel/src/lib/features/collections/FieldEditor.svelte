@@ -31,7 +31,9 @@
 				required: false,
 				unique: false,
 				is_array: false,
-				array_config: { unique_items: false }
+				array_config: { unique_items: false },
+				searchable: false,
+				internal: false
 			}
 		];
 	}

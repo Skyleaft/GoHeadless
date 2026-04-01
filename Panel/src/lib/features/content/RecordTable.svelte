@@ -16,6 +16,11 @@
 		loading?: boolean;
 		canUpdate?: boolean;
 		canDelete?: boolean;
+		/** Current `sort` query value, e.g. `title` or `-created_at` */
+		sortParam?: string | null;
+		onSortClick?: (fieldKey: string) => void;
+		/** Total matching rows (when paginated); falls back to records.length */
+		totalCount?: number;
 	}
 
 	let {
@@ -25,7 +30,10 @@
 		ondelete,
 		loading = false,
 		canUpdate = true,
-		canDelete = true
+		canDelete = true,
+		sortParam = null,
+		onSortClick,
+		totalCount
 	}: Props = $props();
 
 	let deleteTarget = $state<string | null>(null);
@@ -88,10 +96,31 @@
 								class="px-4 py-3 text-xs font-semibold tracking-wide text-left whitespace-nowrap uppercase"
 								style="color: var(--text-muted)"
 							>
-								<div class="gap-2 flex items-center">
-									{field.label || field.key}
-									<Badge type={field.type} />
-								</div>
+								{#if onSortClick}
+									<button
+										type="button"
+										class="gap-2 max-w-full flex items-center text-left transition hover:opacity-90"
+										style="color: var(--text-muted)"
+										onclick={() => onSortClick?.(field.key)}
+									>
+										<span class="truncate">{field.label || field.key}</span>
+										<Badge type={field.type} />
+										<span class="shrink-0 text-[10px] leading-none" aria-hidden="true">
+											{#if sortParam === field.key}
+												<span style="color: var(--brand)">▲</span>
+											{:else if sortParam === `-${field.key}`}
+												<span style="color: var(--brand)">▼</span>
+											{:else}
+												<span class="opacity-35">⇅</span>
+											{/if}
+										</span>
+									</button>
+								{:else}
+									<div class="gap-2 flex items-center">
+										{field.label || field.key}
+										<Badge type={field.type} />
+									</div>
+								{/if}
 							</th>
 						{/each}
 						<th
@@ -174,7 +203,9 @@
 			class="px-4 py-3 text-xs flex items-center justify-between border-t"
 			style="border-color: var(--border); color: var(--text-muted); background: var(--surface-alt)"
 		>
-			<span>{records.length} record{records.length !== 1 ? 's' : ''} total</span>
+			<span
+				>{totalCount ?? records.length} record{(totalCount ?? records.length) !== 1 ? 's' : ''} total</span
+			>
 			{#if fields.length > 8}
 				<span>{fields.length - displayFields.length} columns hidden</span>
 			{/if}

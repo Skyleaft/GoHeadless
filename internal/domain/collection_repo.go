@@ -19,4 +19,6 @@ type CollectionWriter interface {
 type CollectionRepository interface {
 	CollectionReader
 	CollectionWriter
+	// EnsurePhysicalCollections creates MongoDB collections for every slug in system_collections (idempotent).
+	EnsurePhysicalCollections(ctx context.Context) error
 }
