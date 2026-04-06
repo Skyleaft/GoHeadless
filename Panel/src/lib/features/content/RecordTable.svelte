@@ -99,7 +99,7 @@
 								{#if onSortClick}
 									<button
 										type="button"
-										class="gap-2 max-w-full flex items-center text-left transition hover:opacity-90"
+										class="gap-2 flex max-w-full items-center text-left transition hover:opacity-90"
 										style="color: var(--text-muted)"
 										onclick={() => onSortClick?.(field.key)}
 									>
@@ -155,11 +155,18 @@
 							{#each displayFields as field}
 								<td class="px-4 py-3 max-w-xs" style="color: var(--text-primary)">
 									{#if field.type === 'image' && record[field.key]}
-										<img
-											src={getFileUrl(record[field.key] as string)}
-											alt={field.label}
-											class="h-8 w-8 rounded object-cover"
-										/>
+										{@const imgPath = Array.isArray(record[field.key])
+											? (record[field.key] as string[])[0]
+											: record[field.key]}
+										{#if imgPath}
+											<img
+												src={getFileUrl(imgPath as string)}
+												alt={field.label}
+												class="h-8 w-8 rounded object-cover"
+											/>
+										{:else}
+											<span class="text-xs opacity-50">—</span>
+										{/if}
 									{:else if field.type === 'bool' || field.type === 'toggle'}
 										<span class={record[field.key] ? 'text-green-500' : 'text-red-400'}>
 											{record[field.key] ? '✓ Yes' : '✗ No'}
