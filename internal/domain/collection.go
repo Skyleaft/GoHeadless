@@ -26,6 +26,7 @@ const (
 	TypeDatePicker     FieldType = "datepicker"
 	TypeTimePicker     FieldType = "timepicker"
 	TypeDateTimePicker FieldType = "datetimepicker"
+	TypeDateRange      FieldType = "daterange"
 
 	// 4. File & Media Components
 	TypeFileUpload  FieldType = "file"

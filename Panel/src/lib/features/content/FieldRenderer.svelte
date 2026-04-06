@@ -41,7 +41,7 @@
 	const isText = (t: string) => ['text', 'email', 'password', 'url', 'phone'].includes(t);
 	const isNumber = (t: string) => ['number', 'slider', 'rating'].includes(t);
 	const isSelect = (t: string) => ['select', 'radio', 'checkbox', 'multiselect'].includes(t);
-	const isDateTime = (t: string) => ['datepicker', 'timepicker', 'datetimepicker'].includes(t);
+	const isDateTime = (t: string) => ['datepicker', 'timepicker', 'datetimepicker', 'daterange'].includes(t);
 	const isRelation = (t: string) => ['relation', 'autocomplete'].includes(t);
 	const isStructural = (t: string) => ['section', 'group', 'repeater', 'bool', 'toggle'].includes(t);
 </script>

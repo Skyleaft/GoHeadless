@@ -16,10 +16,10 @@ export type FieldType =
 	| 'radio'
 	| 'checkbox'
 	| 'multiselect'
-	// Date & Time
 	| 'datepicker'
 	| 'timepicker'
 	| 'datetimepicker'
+	| 'daterange'
 	// File & Media
 	| 'file'
 	| 'image'
@@ -173,7 +173,8 @@ export const FIELD_TYPE_GROUPS: FieldTypeGroup[] = [
 		types: [
 			{ value: 'datepicker', label: 'Date', icon: '📅' },
 			{ value: 'timepicker', label: 'Time', icon: '🕐' },
-			{ value: 'datetimepicker', label: 'DateTime', icon: '📆' }
+			{ value: 'datetimepicker', label: 'DateTime', icon: '📆' },
+			{ value: 'daterange', label: 'Date Range', icon: '🗓' }
 		]
 	},
 	{
