@@ -21,12 +21,16 @@ function createCollectionsStore() {
 		update((all) => all.filter((c) => c.slug !== slug));
 	}
 
+	function updateLocal(slug: string, newCollection: Collection) {
+		update((all) => all.map(c => c.slug === slug ? newCollection : c));
+	}
+
 	function reset() {
 		set([]);
 		loaded = false;
 	}
 
-	return { subscribe, load, addLocal, removeLocal, reset };
+	return { subscribe, load, addLocal, removeLocal, updateLocal, reset };
 }
 
 export const collectionsStore = createCollectionsStore();

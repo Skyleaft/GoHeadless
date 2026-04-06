@@ -9,10 +9,11 @@
 	interface Props {
 		initial?: Partial<Collection>;
 		loading?: boolean;
+		isEditMode?: boolean;
 		onsubmit?: (collection: Omit<Collection, 'id'>) => void;
 	}
 
-	let { initial, loading = false, onsubmit }: Props = $props();
+	let { initial, loading = false, isEditMode = false, onsubmit }: Props = $props();
 
 	let name = $state(initial?.name ?? '');
 	let slug = $state(initial?.slug ?? '');
@@ -194,6 +195,7 @@
 				bind:value={name}
 				error={errors.name}
 				required
+				disabled={isEditMode}
 			/>
 
 			<div class="gap-1.5 flex flex-col">
@@ -212,7 +214,8 @@
 						bind:value={slug}
 						oninput={() => (slugEdited = true)}
 						placeholder="blog-articles"
-						class="h-12 rounded-2xl pl-8 pr-4 text-sm font-bold w-full border-2 transition-all duration-200 focus:ring-4 focus:ring-[var(--brand)]/10 focus:outline-none"
+						disabled={isEditMode}
+						class="h-12 rounded-2xl pl-8 pr-4 text-sm font-bold w-full border-2 transition-all duration-200 focus:ring-4 focus:ring-[var(--brand)]/10 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
 						style="background: var(--surface-alt); border-color: {errors.slug
 							? '#ef4444'
 							: 'transparent'}; color: var(--text-primary)"

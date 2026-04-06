@@ -20,6 +20,7 @@ func (h *Handler) Routes(router fiber.Router) {
 	router.Get("/", h.ListCollections)
 	router.Post("/", h.CreateCollection)
 	router.Get("/:slug", h.GetCollection)
+	router.Put("/:slug", h.UpdateCollection)
 	router.Delete("/:slug", h.DeleteCollection)
 }
 
@@ -87,4 +88,33 @@ func (h *Handler) DeleteCollection(c fiber.Ctx) error {
 		return apierr.Internal("failed to delete collection", err)
 	}
 	return c.SendStatus(fiber.StatusNoContent)
+}
+
+// UpdateCollection update a collection by slug
+// @Summary Update collection by slug
+// @Description Update metadata, fields, and access control for a specific collection
+// @Tags collections
+// @Accept json
+// @Produce json
+// @Param slug path string true "Collection Slug"
+// @Param collection body domain.Collection true "Collection Definition"
+// @Success 200 {object} domain.Collection
+// @Router /collections/{slug} [put]
+func (h *Handler) UpdateCollection(c fiber.Ctx) error {
+	var coll domain.Collection
+	if err := c.Bind().Body(&coll); err != nil {
+		return apierr.BadRequest("invalid request body")
+	}
+
+	if err := h.service.UpdateCollection(context.Background(), c.Params("slug"), &coll); err != nil {
+		return apierr.BadRequest(err.Error())
+	}
+	
+	// Return the updated collection object
+	updated, err := h.service.GetCollection(context.Background(), c.Params("slug"))
+	if err != nil {
+		return apierr.Internal("updated successfully but failed to fetch latest response", err)
+	}
+
+	return c.JSON(updated)
 }
