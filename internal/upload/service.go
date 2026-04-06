@@ -10,6 +10,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 	"time"
@@ -58,7 +59,7 @@ func (s *service) UploadFile(file io.Reader, filename string) (string, error) {
 				InputImage(img).
 				OutputFile(filePath).
 				Run(); err == nil {
-				return filepath.Join("/uploads", newName), nil
+				return path.Join("/uploads", newName), nil
 			}
 			// Fallback if conversion fails
 		}
@@ -75,7 +76,7 @@ func (s *service) UploadFile(file io.Reader, filename string) (string, error) {
 		return "", fmt.Errorf("failed to write file: %w", err)
 	}
 
-	return filepath.Join("/uploads", newName), nil
+	return path.Join("/uploads", newName), nil
 }
 
 func (s *service) ensureDir() error {
@@ -97,14 +98,20 @@ func (s *service) DeleteFile(filePath string) error {
 	fullPath := filepath.Join(s.basePath, fileName)
 
 	if _, err := os.Stat(fullPath); os.IsNotExist(err) {
-		return fmt.Errorf("file not found: %s", filePath)
+		// File already gone, treat as success idempotently
+		return nil
 	}
 
-	if err := os.Remove(fullPath); err != nil {
-		return fmt.Errorf("failed to delete file: %w", err)
+	var err error
+	for i := 0; i < 3; i++ {
+		err = os.Remove(fullPath)
+		if err == nil {
+			return nil
+		}
+		time.Sleep(100 * time.Millisecond)
 	}
 
-	return nil
+	return fmt.Errorf("failed to delete file: %w", err)
 }
 
 func (s *service) UpdateFile(oldPath string, file io.Reader, filename string) (string, error) {

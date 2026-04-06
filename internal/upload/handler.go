@@ -3,6 +3,7 @@ package upload
 import (
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/gofiber/fiber/v3"
 )
@@ -17,6 +18,7 @@ func NewHandler(service Service) *Handler {
 
 func (h *Handler) Routes(router fiber.Router) {
 	router.Post("", h.UploadFile)
+	router.Post("/multiple", h.UploadMultipleFiles)
 	router.Delete("", h.DeleteFile)
 	router.Put("", h.UpdateFile)
 }
@@ -63,6 +65,54 @@ func (h *Handler) UploadFile(c fiber.Ctx) error {
 	})
 }
 
+// UploadMultipleFiles handles uploading multiple files at once
+// @Summary Upload multiple files
+// @Description Handles uploading multiple files sent as `files` form fields, processes each, and returns an array of file paths.
+// @Tags Upload
+// @Accept multipart/form-data
+// @Param files formData file true "The files to upload (repeat the field for each file)"
+// @Success 200 {object} map[string][]string "Returns the list of file paths"
+// @Failure 400 {object} map[string]string "Invalid file upload request"
+// @Failure 500 {object} map[string]string "Server error during processing"
+// @Router /upload/multiple [post]
+func (h *Handler) UploadMultipleFiles(c fiber.Ctx) error {
+	form, err := c.MultipartForm()
+	if err != nil {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+			"error": fmt.Sprintf("failed to parse multipart form: %v", err),
+		})
+	}
+
+	files := form.File["files"]
+	if len(files) == 0 {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+			"error": "no files provided; send files under the 'files' field",
+		})
+	}
+
+	paths := make([]string, 0, len(files))
+	for _, fileHeader := range files {
+		file, err := fileHeader.Open()
+		if err != nil {
+			return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
+				"error": fmt.Sprintf("failed to open uploaded file '%s': %v", fileHeader.Filename, err),
+			})
+		}
+		filePath, err := h.service.UploadFile(file, fileHeader.Filename)
+		file.Close()
+		if err != nil {
+			return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
+				"error": fmt.Sprintf("failed to process file '%s': %v", fileHeader.Filename, err),
+			})
+		}
+		paths = append(paths, filePath)
+	}
+
+	return c.Status(http.StatusOK).JSON(fiber.Map{
+		"paths": paths,
+	})
+}
+
 // DeleteFile handles deleting an uploaded file
 // @Summary Delete an uploaded file
 // @Description Deletes a file from the server's local storage based on its path.
@@ -81,6 +131,11 @@ func (h *Handler) DeleteFile(c fiber.Ctx) error {
 	}
 
 	if err := h.service.DeleteFile(filePath); err != nil {
+		if strings.HasPrefix(err.Error(), "invalid path") {
+			return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+				"error": err.Error(),
+			})
+		}
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
 			"error": fmt.Sprintf("failed to delete file: %v", err),
 		})

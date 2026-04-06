@@ -139,6 +139,12 @@ export interface UploadResponse {
 	path: string;
 }
 
+// Multi-file upload API response
+export interface UploadMultipleResponse {
+	paths: string[];
+}
+
+
 // ── Field type metadata for the UI ───────────────────────────
 
 export interface FieldTypeGroup {

@@ -35,6 +35,10 @@
 		if (field.is_array && !Array.isArray(data[field.key])) {
 			data[field.key] = [];
 		}
+		// Ensure single file/image fields default to empty string
+		if (!field.is_array && (field.type === 'file' || field.type === 'image') && data[field.key] == null) {
+			data[field.key] = '';
+		}
 	});
 
 	// Components mapping helpers
@@ -51,6 +55,17 @@
 		{#if field.is_array && field.type === 'text'}
 			<BaseField {field}>
 				<TagInput bind:value={data[field.key]} placeholder={field.placeholder || "Add item..."} />
+			</BaseField>
+
+		{:else if field.is_array && (field.type === 'file' || field.type === 'image')}
+			<!-- Multi-file / multi-image: delegates entirely to FileUpload in multiple mode -->
+			<BaseField {field}>
+				<FileUpload
+					multiple={true}
+					bind:value={data[field.key]}
+					isImage={field.type === 'image'}
+					accept={field.type === 'image' ? 'image/*' : '*'}
+				/>
 			</BaseField>
 
 		{:else if field.is_array}

@@ -1,4 +1,4 @@
-import type { UploadResponse } from '$lib/types/collection';
+import type { UploadResponse, UploadMultipleResponse } from '$lib/types/collection';
 import { postForm, del, putForm } from './client';
 
 export const uploadApi = {
@@ -6,6 +6,12 @@ export const uploadApi = {
 		const fd = new FormData();
 		fd.append('file', file);
 		return postForm<UploadResponse>('/upload', fd);
+	},
+
+	uploadMultiple: async (files: File[]): Promise<UploadMultipleResponse> => {
+		const fd = new FormData();
+		for (const file of files) fd.append('files', file);
+		return postForm<UploadMultipleResponse>('/upload/multiple', fd);
 	},
 
 	delete: async (path: string): Promise<void> => {
