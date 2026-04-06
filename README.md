@@ -3,14 +3,20 @@
 A Headless CMS implementation built with Go Fiber and MongoDB, following Clean Architecture and SOLID principles.
 
 ## Features
-- **Dynamic Collection Management (Metadata)**: Define your own data structures (collections and fields).
-- **Dynamic Content Engine**: CRUD operations on the collections you've defined, with automatic schema validation.
-- **Admin Panel**: SvelteKit SPA for managing collections and content.
-- **SOLID Principles**:
-    - **Single Responsibility (SRP)**: Each component has a single purpose.
-    - **Open/Closed (OCP)**: The system supports multiple field types and can be extended without altering the core.
-    - **Interface Segregation (ISP)**: Split repository interfaces (e.g., Reader/Writer).
-    - **Dependency Inversion (DIP)**: High-level business logic doesn't depend on low-level database details.
+- **Dynamic Collection Management**: Systematically define data structures (collections, fields, and access control policies).
+  - **Editable Schemas**: Safely mutate collection definitions at any point without losing integrity (protects identifiers).
+- **Advanced Field System**: 
+  - Standard Inputs (Text, Numbers, Booleans, Relational bindings).
+  - Chronological inputs including new strictly-validated `daterange` fields.
+  - Recursive layouts via structural fields (Groups, Repeaters, Tabs, Grid).
+- **Media & File Handling**: Dedicated file management API with on-the-fly Image-to-WebP compression.
+- **Dynamic Content Engine**: Seamless CRUD operations directly matching the schemas you've outlined. Includes nested data preservation and validation.
+- **Modern Admin Panel**: A high-performance, reload-free SvelteKit SPA bridging you directly to your content and schemas.
+- **SOLID Blueprint**:
+    - **Single Responsibility (SRP)**: Handlers, Services, and Repositories are strictly segregated.
+    - **Open/Closed (OCP)**: Field validation blocks can extend cleanly over time.
+    - **Interface Segregation (ISP)**: Split abstractions like `CollectionWriter` vs `CollectionReader`.
+    - **Dependency Inversion (DIP)**: Top-level domain structs hold no dependencies on physical drivers (MongoDB).
 
 ## Tech Stack
 - **Go 1.21+**
