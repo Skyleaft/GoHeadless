@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"GoHeadless/internal/domain"
+
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -298,7 +299,11 @@ func (s *service) ListRecords(ctx context.Context, collSlug string, pq ParsedQue
 
 	searchDoc := buildSearchOr(pq.Search, flat)
 	filter := mergeFilterAndSearch(baseFilter, searchDoc)
-	sort := buildSort(pq.SortField, pq.SortDesc)
+	sortField := pq.SortField
+	if sf, ok := schemaMap[sortField]; ok && sf.Type == domain.TypeDateRange {
+		sortField = sortField + ".start"
+	}
+	sort := buildSort(sortField, pq.SortDesc)
 
 	var proj bson.M
 	if stripInternal {
